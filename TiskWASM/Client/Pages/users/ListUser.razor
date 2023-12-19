@@ -1,0 +1,50 @@
+﻿@page "/list-user"
+@inject HttpClient client
+
+<h2>Všichni uživatelé</h2>
+
+<MudTable Items="@Users" Hover="true" Loading="_loading" LoadingProgressColor="Color.Info" Filter="new Func<dtUser,bool>(FilterFunc1)">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Periodic Elements</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Immediate="true" Placeholder="Hledat..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Nr</MudTh>
+        <MudTh>Jméno</MudTh>
+        <MudTh>Kancelář</MudTh>
+        <MudTh>Odbor</MudTh>
+        <MudTh>Email</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Nr">@context.Id</MudTd>
+        <MudTd DataLabel="Jméno">@context.Name</MudTd>
+        <MudTd DataLabel="Kancelář">@context.Office</MudTd>
+        <MudTd DataLabel="Odbor">@context.Department</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+    </RowTemplate>
+</MudTable>
+
+    @code {
+    private IEnumerable<dtUser> Users = new List<dtUser>();
+    private bool _loading = false;
+    string searchString = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        Users = await client.GetFromJsonAsync<List<dtUser>>("/api/user");
+        _loading = false;
+    }
+
+    private bool FilterFunc1(dtUser element) => FilterFunc(element, searchString);
+
+    private bool FilterFunc(dtUser element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if ($"{element.Name} {element.Office} {element.Department}".Contains(searchString))
+            return true;
+        return false;
+    }
+}

@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>Tiskarny</PageTitle>
+
+<MudThemeProvider @ref="_provider" IsDarkMode="true" Theme="_theme"/>
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Width="16rem">        
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        <div class="p-3">
+            @Body
+        </div>
+    </MudMainContent>
+</MudLayout>
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    MudThemeProvider _provider;
+    MudTheme _theme = new MudTheme()
+        {
+            PaletteDark = new PaletteDark()
+            {
+                Primary = Colors.Blue.Default,
+                TextPrimary = Colors.Shades.White,
+                White = Colors.Shades.White,
+                DrawerText = Colors.Shades.White,
+                DrawerIcon = Colors.Grey.Lighten1,
+                Background = Colors.Shades.Black,
+                DrawerBackground = Colors.Grey.Darken4,
+                AppbarBackground = Colors.Grey.Darken4,
+                HoverOpacity = 0.2
+        }
+    };
+}

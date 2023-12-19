@@ -1,0 +1,28 @@
+﻿<MudNavMenu Class="mud-width-full">
+    <MudText Typo="Typo.h5" Class="pa-3 text-center" Color="Color.Default">P10 - Tisk</MudText>
+    <MudDivider Class="my-2" />
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AddCircle">Přidat tiskárnu uživateli</MudNavLink>    
+    <MudNavLink Href="/foo" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewList">Záznamy</MudNavLink>    
+    <MudNavGroup Title="Uživatelé" Icon="@Icons.Material.Filled.Person" Expanded="_usrExpand">
+        <MudNavLink Href="/list-user" Icon="@Icons.Material.Filled.People">Zobrazit</MudNavLink>
+        <MudNavLink Href="/add-user" Icon="@Icons.Material.Filled.PersonAdd">Přidat</MudNavLink>
+        <MudNavLink Href="/import-user" Icon="@Icons.Material.Filled.ImportExport">Hromadný import</MudNavLink>
+    </MudNavGroup>
+    <MudNavGroup Title="Tiskárny" Icon="@Icons.Material.Filled.Print" Expanded="_prnExpand">
+        <MudNavLink Href="/list-printer" Icon="@Icons.Material.Filled.ViewList">Zobrazit tiskárny</MudNavLink>
+        <MudNavLink Href="/add-printer" Icon="@Icons.Material.Filled.AddCircle">Přidat tiskárnu</MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>
+
+@code {
+    private bool collapseNavMenu = true;
+    private bool _prnExpand = false;
+    private bool _usrExpand = false;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

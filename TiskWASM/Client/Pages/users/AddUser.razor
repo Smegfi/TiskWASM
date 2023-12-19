@@ -1,0 +1,30 @@
+﻿@page "/add-user"
+@inject HttpClient client
+
+<h2>Přidat uživatele</h2>
+<MudPaper Class="pa-4">
+    <MudForm @ref="form">
+        <MudTextField T="string" Label="Jméno a příjemní" Required="true" @bind-Value="tempUser.Name"/>
+        <MudTextField T="string" Label="Kancelář" Required="true" @bind-Value="tempUser.Office"/>
+        <MudTextField T="string" Label="Odbor" Required="true" @bind-Value="tempUser.Department"/>
+        <MudTextField T="string" Label="Email" Required="true" InputType="InputType.Email" @bind-Value="tempUser.Email" />
+    </MudForm>
+</MudPaper>
+<MudPaper Class="pa-4">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateUser">Uložit</MudButton>
+</MudPaper>
+
+
+@code {
+    private MudForm form;
+    private dtUser tempUser = new dtUser();
+    private bool _loading = false;
+
+    private async Task CreateUser()
+    {
+        _loading = true;
+
+        tempUser = new dtUser();
+        _loading = false;
+    }
+}

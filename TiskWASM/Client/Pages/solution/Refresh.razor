@@ -1,0 +1,11 @@
+﻿@page "/refresh/{Id:int}"
+@inject NavigationManager navigation
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        navigation.NavigateTo($"/detail-solution/{Id}");
+    }
+}

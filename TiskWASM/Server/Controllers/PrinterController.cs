@@ -22,5 +22,11 @@ namespace TiskWASM.Server.Controllers
         {
             return await repository.ReadAsync();
         }
+
+        [HttpPost]
+        public async Task Create(dtPrinters model)
+        {
+            await repository.CreateAsync(model);
+        }
     }
 }

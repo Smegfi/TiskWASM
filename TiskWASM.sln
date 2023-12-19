@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiskWASM.Server", "TiskWASM\Server\TiskWASM.Server.csproj", "{D49AD6C3-9668-4BFC-88B4-ACF16AAF5749}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TiskWASM.Server", "TiskWASM\Server\TiskWASM.Server.csproj", "{D49AD6C3-9668-4BFC-88B4-ACF16AAF5749}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiskWASM.Client", "TiskWASM\Client\TiskWASM.Client.csproj", "{DECE0B1E-2CDA-4570-A0FC-497B2004D1EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TiskWASM.Client", "TiskWASM\Client\TiskWASM.Client.csproj", "{DECE0B1E-2CDA-4570-A0FC-497B2004D1EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiskWASM.Shared", "TiskWASM\Shared\TiskWASM.Shared.csproj", "{66A02E2D-B83F-42A6-BAA9-7431EF2B00D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TiskWASM.Shared", "TiskWASM\Shared\TiskWASM.Shared.csproj", "{66A02E2D-B83F-42A6-BAA9-7431EF2B00D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

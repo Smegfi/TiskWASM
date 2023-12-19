@@ -9,7 +9,7 @@ namespace TiskWASM.Shared
         [Key]
         public int Id { get; set; }
         public int UserId { get; set; }
-        public int RequiestedPrinter { get; set; }
+        public int RequestedPrinter { get; set; }
         public int SuggestedPrinter { get; set; }
         public string Description { get; set; } = string.Empty;
     }

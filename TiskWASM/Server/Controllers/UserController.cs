@@ -20,5 +20,22 @@ namespace TiskWASM.Server.Controllers
         {
             return await this.repository.ReadAsync();
         }
+
+        [HttpGet("{filter}")]
+        public async Task<dtUser> Filter(string filter)
+        {
+            return await this.repository.FindByEmail(filter);
+        }
+        [HttpGet("{filter:int}")]
+        public async Task<dtUser> FindById(int filter)
+        {
+            return await this.repository.FindById(filter);
+        }
+
+        [HttpPost]
+        public async Task Create(dtUser model)
+        {
+            await repository.CreateAsync(model);            
+        }
     }
 }

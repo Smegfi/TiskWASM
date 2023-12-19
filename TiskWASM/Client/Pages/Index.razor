@@ -1,8 +1,85 @@
 ﻿@page "/"
+@using System.Web
+@inject HttpClient client
 
-<PageTitle>Index</PageTitle>
+<h2>Přidat tiskárnu zaměstnanci</h2>
+<MudPaper Class="pa-4">
+    <MudForm @ref="form">
+        <MudPaper Class="d-flex gap-3 mb-4">
+            <MudTextField @bind-Value="@tempUser.Email" HelperText="@emailHelper" Label="Email" Variant="Variant.Filled"></MudTextField>
+            <MudTextField @bind-Value="@tempUser.Name" Label="Jméno" Variant="Variant.Filled"></MudTextField>
+            <MudTextField @bind-Value="@tempUser.Office" Label="Kancelář" Variant="Variant.Filled"></MudTextField>
+        </MudPaper>
+        <MudButton Class="mb-4" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="SearchUser">Hledat zaměstnance</MudButton>
+        <MudPaper Class="d-flex gap-4 mb-4">
+            <MudSelect @bind-Value="@solution.RequestedPrinter" Label="Požadovaná tiskárna" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var item in printers)
+                {
+                    <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect @bind-Value="@solution.SuggestedPrinter" Label="Navrhovaná tiskárna" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var item in printers)
+                {   
+                    <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>                
+                }
+            </MudSelect>
+        </MudPaper>
+        <MudTextField @bind-Value="@solution.Description" Label="Vyjádření, informace" Variant="Variant.Filled" Lines="4" />
+    </MudForm>
+</MudPaper>
+<MudPaper Class="pa-4">
+    @if (_loading)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            Odesílám
+        </MudButton>
+    }
+    else
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreatePriner">Uložit</MudButton>
+    }
+</MudPaper>
 
-<h1>Hello, world!</h1>
+@code {
+    private MudForm form;
+    private dtSolution solution = new dtSolution();
+    private dtUser tempUser = new dtUser();
+    private List<dtPrinters> printers = new List<dtPrinters>();
+    private bool _loading = false;
+    private string emailHelper = string.Empty;
 
-Welcome to your new app.
+    protected override async Task OnInitializedAsync()
+    {
+        printers = await client.GetFromJsonAsync<List<dtPrinters>>("/api/printer");
+    }
 
+    private async Task CreatePriner()
+    {
+        _loading = true;
+        await client.PostAsJsonAsync<dtSolution>("/api/solution", solution);
+        solution = new dtSolution();
+        tempUser = new dtUser();
+        _loading = false;
+    }
+
+    private async Task SearchUser()
+    {
+        try
+        {
+            emailHelper = string.Empty;
+            var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{tempUser.Email}");
+            if (result != null)
+            {
+                tempUser = result;
+                solution.UserId = result.Id;
+            }
+        }
+        catch
+        {
+            tempUser = new dtUser();
+            emailHelper = "Nenalezeno v databázi";
+        }
+    }
+}

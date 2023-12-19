@@ -1,0 +1,86 @@
+﻿@page "/detail-solution/{Id:int}"
+@using Newtonsoft.Json
+@inject HttpClient client
+@inject IDialogService DialogService
+@inject NavigationManager navigation
+@inject ISnackbar Snackbar
+
+<h2>Detail záznamu : @Id</h2>
+
+<MudPaper Class="d-flex mb-4 p-2">
+    <MudStack>
+        <MudPaper Elevation="0" Class="pa-3">Jméno</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">Požadovaná tiskárna</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">Navrhovaná tiskárna</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">Popis, vyjádření</MudPaper>
+    </MudStack>
+    <MudStack>
+        <MudPaper Elevation="0" Class="pa-3">@user.Name</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">@solution.RequestedPrinter</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">@solution.SuggestedPrinter</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">@solution.Description</MudPaper>
+    </MudStack>
+</MudPaper>
+
+<h2>Komentáře</h2>
+<MudPaper Class="d-flex flex-column gap-4 p-2">
+    @if (comments.Any())
+    {
+        foreach (var item in comments)
+        {
+            <MudPaper Class="card w-100">
+                <div class="card-body p-4">
+                    <div class="">
+                    <h5>@item.Name</h5>
+                    <p class="small">@item.Date.ToString("G")</p>
+                    <p>
+                        @item.Description
+                    </p>
+                    </div>
+                </div>
+            </MudPaper>
+        }        
+    }
+    else
+    {
+        <span>Zatím žádné komentáře</span>
+    }
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large" OnClick="@CreateComment">Přidat komentář</MudButton>
+</MudPaper>
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private dtSolution solution = new dtSolution();
+    private dtUser user = new dtUser();
+    private List<dtComment> comments = new List<dtComment>();       
+
+    protected override async Task OnInitializedAsync()
+    {
+        solution = await client.GetFromJsonAsync<dtSolution>($"/api/solution/{Id}");
+        user = await client.GetFromJsonAsync<dtUser>($"/api/user/{solution.UserId}");
+        comments = await client.GetFromJsonAsync<List<dtComment>>($"/api/comment/solution/{solution.Id}");
+    }
+
+    private async Task CreateComment()
+    {
+        var parameters = new DialogParameters<CreateComentar> { { x => x.comment, new dtComment() { SolutionId = solution.Id, Date = DateTime.Now } } };
+
+        DialogOptions opt = new DialogOptions();
+        opt.MaxWidth = MaxWidth.Medium;
+        opt.FullWidth = true;
+        opt.DisableBackdropClick = true;
+
+        var dialog = await DialogService.ShowAsync<CreateComentar>("Delete Server", parameters, opt);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            dtComment test = JsonConvert.DeserializeObject<dtComment>((string)result.Data);
+            comments.Add(test);
+            Snackbar.Add($"New ID is : {test.Id}", Severity.Info);
+        }
+    }
+}

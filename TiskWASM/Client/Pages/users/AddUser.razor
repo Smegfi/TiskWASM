@@ -11,19 +11,29 @@
     </MudForm>
 </MudPaper>
 <MudPaper Class="pa-4">
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateUser">Uložit</MudButton>
+    @if (_loading)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            Odesílám
+        </MudButton>
+    }
+    else
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateUser">Uložit</MudButton>        
+    }
 </MudPaper>
 
 
 @code {
     private MudForm form;
     private dtUser tempUser = new dtUser();
-    private bool _loading = false;
+    private bool _loading = false;    
 
     private async Task CreateUser()
     {
         _loading = true;
-
+        await client.PostAsJsonAsync<dtUser>("/api/user", tempUser);
         tempUser = new dtUser();
         _loading = false;
     }

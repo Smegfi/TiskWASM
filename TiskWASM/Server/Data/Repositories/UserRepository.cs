@@ -31,5 +31,14 @@ namespace TiskWASM.Server.Data.Repositories
             await this.context.Users.AddAsync(user);
             await this.context.SaveChangesAsync();    
         }
+
+        public async Task<dtUser?> FindByEmail(string email)
+        {
+            return await this.context.Users.FirstOrDefaultAsync(x => x.Email == email);
+        }
+        public async Task<dtUser?> FindById(int id)
+        {
+            return await this.context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }

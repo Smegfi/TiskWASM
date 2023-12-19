@@ -9,7 +9,17 @@
     </MudForm>
 </MudPaper>
 <MudPaper Class="pa-4">
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreatePrinter">Uložit</MudButton>
+    @if (_loading)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            Odesílám
+        </MudButton>
+    }
+    else
+    {        
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreatePrinter">Uložit</MudButton>
+    }
 </MudPaper>
 
 
@@ -21,7 +31,7 @@
     private async Task CreatePrinter()
     {
         _loading = true;
-
+        await client.PostAsJsonAsync<dtPrinters>("/api/printer", tempPrinter);
         tempPrinter = new dtPrinters();
         _loading = false;
     }

@@ -1,0 +1,50 @@
+﻿@inject ISnackbar Snackbar
+@inject HttpClient client
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Vytvořit komentář
+        </MudText>
+    </TitleContent>
+    <DialogContent>        
+        <MudTextField @bind-Value="@comment.Name" Label="Jméno" ReadOnly="false" />
+        <MudTextField @bind-Value="@comment.Description" Label="Komentář" ReadOnly="false" />
+        <MudTextField Value="@comment.Date.ToString("G")" Label="Datum" ReadOnly="true" Disabled="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Zrušit</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Create">Vytvořit</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] 
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] 
+    public dtComment comment { get; set; } = new dtComment();
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Create()
+    {        
+        var result = await client.PostAsJsonAsync<dtComment>("/api/comment", comment);
+        if (result.IsSuccessStatusCode)
+        {
+            var data = await result.Content.ReadAsStringAsync();
+            if (data != null)
+            {
+                Snackbar.Add("Komentář založený", Severity.Success);                
+                MudDialog.Close(DialogResult.Ok(data));
+            }
+        }
+        else
+        {
+            Snackbar.Add("Něco se nepovedlo, komentář nebyl vytvořený", Severity.Error);
+            MudDialog.Cancel();
+        }
+    }
+}

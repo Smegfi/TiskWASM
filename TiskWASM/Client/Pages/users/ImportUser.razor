@@ -1,7 +1,73 @@
 ﻿@page "/import-user"
+@inject HttpClient client
+@using System.Net.Http.Headers
 
-<h2>UNDER CONSTRUCTION....</h2>
+<h2>Náhrání ze souboru</h2>
 
-@code {
+<MudPaper Class="p-3 mb-4">
+    <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+        <ButtonTemplate>
+            @if (uploading)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Info" Disabled="true">
+                    Nahrávám...
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+                </MudButton>
+            }
+            else
+            {
+                <MudButton HtmlTag="label"
+                            Variant="Variant.Filled"
+                            Color="Color.Primary"
+                            StartIcon="@Icons.Material.Filled.CloudUpload"
+                            for="@context.Id">
+                    Nahrát soubor
+                </MudButton>            
+            }
+        </ButtonTemplate>
+    </MudFileUpload>
+</MudPaper>
 
+@if (uploading)
+{
+    <MudAlert Severity="Severity.Info">Prosím zůstaň a nikam neodcházej dokud se data nenahrajou na server...</MudAlert>
+}
+else
+{
+    <MudPaper Class="p-3">
+        <span>
+            Do aplikace se dají nahrát uživatele pomocí souboru. Je potřeba
+            z intranetu pomocí exportování do CSV vytáhnout tabulku, která se
+            otevře v textovém souboru a uloží se jako UTF-8 .csv soubor.
+            Tento soubor je poté možné nahrát do aplikace.
+        </span>
+    </MudPaper>
+}
+
+@code
+{
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+    private bool uploading = false;
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        uploading = true;
+        files.Add(file);
+
+        using var content = new MultipartFormDataContent();
+        long maxFileSize = 1024 * 15000;
+
+        var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+
+        content.Add(
+            content: fileContent,
+            name: "\"file\"",
+            fileName: file.Name);
+
+        await client.PostAsync("/api/user/upload", content);
+
+        uploading = false;
+    }
 }

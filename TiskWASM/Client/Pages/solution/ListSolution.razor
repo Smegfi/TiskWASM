@@ -6,7 +6,7 @@
 
 <MudTable Items="@Solutions" Hover="true" Loading="_loading" LoadingProgressColor="Color.Info" Filter="new Func<dtSolution,bool>(FilterFunc1)">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Periodic Elements</MudText>
+        <MudText Typo="Typo.h6"></MudText>
         <MudSpacer />
         <MudTextField @bind-Value="searchString" Immediate="true" Placeholder="Hledat..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>

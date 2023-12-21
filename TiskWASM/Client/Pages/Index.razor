@@ -7,7 +7,6 @@
     <MudForm @ref="form">
         <MudPaper Class="d-flex gap-3 mb-4">
             <MudTextField @bind-Value="@tempUser.Email" HelperText="@emailHelper" Label="Email" Variant="Variant.Filled"></MudTextField>
-            <MudTextField @bind-Value="@tempUser.Name" Label="Jméno" Variant="Variant.Filled"></MudTextField>
             <MudTextField @bind-Value="@tempUser.Office" Label="Kancelář" Variant="Variant.Filled"></MudTextField>
         </MudPaper>
         <MudButton Class="mb-4" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="SearchUser">Hledat zaměstnance</MudButton>
@@ -69,7 +68,7 @@
         try
         {
             emailHelper = string.Empty;
-            var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{tempUser.Email}");
+            var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{tempUser.Email.ToLower()}");
             if (result != null)
             {
                 tempUser = result;

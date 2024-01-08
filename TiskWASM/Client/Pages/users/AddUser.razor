@@ -1,5 +1,6 @@
 ﻿@page "/add-user"
 @inject HttpClient client
+@inject ISnackbar Snackbar
 
 <h2>Přidat uživatele</h2>
 <MudPaper Class="pa-4">
@@ -33,8 +34,17 @@
     private async Task CreateUser()
     {
         _loading = true;
-        await client.PostAsJsonAsync<dtUser>("/api/user", tempUser);
-        tempUser = new dtUser();
+        var result = await client.PostAsJsonAsync<dtUser>("/api/user", tempUser);
+        if (result.IsSuccessStatusCode)
+        {
+            var entity = await result.Content.ReadFromJsonAsync<dtUser>();
+            Snackbar.Add($"Byl vytvořený uživatel s ID: {entity.Id}", Severity.Success);
+            this.tempUser = new dtUser();
+        }
+        else
+        {
+            Snackbar.Add(await result.Content.ReadAsStringAsync(), Severity.Error);
+        }
         _loading = false;
     }
 }

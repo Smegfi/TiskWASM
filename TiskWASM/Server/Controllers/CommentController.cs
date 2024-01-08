@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TiskWASM.Server.Data;
 using TiskWASM.Server.Data.Repositories;
 using TiskWASM.Shared;
 
@@ -10,9 +11,11 @@ namespace TiskWASM.Server.Controllers
     public class CommentController : ControllerBase
     {
         private CommentRepository repository;
+        private DatabaseContext context;
         public CommentController(IConfiguration config)
         {
             this.repository = new CommentRepository(config);
+            this.context = new DatabaseContext(config);
         }
 
         [HttpGet]
@@ -27,9 +30,18 @@ namespace TiskWASM.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<dtComment> Post(dtComment model)
+        public async Task<IActionResult> Create(dtComment model)
         {
-            return await repository.CreateAsync(model);
+            try
+            {
+                var result = await context.Comments.AddAsync(model);
+                await this.context.SaveChangesAsync();
+                return Ok(result.Entity);
+            }
+            catch
+            {
+                return BadRequest("Chyba při vytváření komentáře");
+            }            
         }
     }
 }

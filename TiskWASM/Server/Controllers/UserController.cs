@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using TiskWASM.Server.Data;
 using TiskWASM.Server.Data.Repositories;
 using TiskWASM.Shared;
 using TiskWASM.Shared.Csv;
@@ -20,11 +21,13 @@ namespace TiskWASM.Server.Controllers
         private UserRepository repository;
         private readonly IWebHostEnvironment env;
         private readonly IConfiguration configuration;
+        private DatabaseContext context;
         public UserController(IConfiguration config, IWebHostEnvironment env)
         {
             this.repository = new UserRepository(config);
             this.configuration = config;
             this.env = env;
+            this.context = new DatabaseContext(config);
         }
 
         [HttpGet]
@@ -46,9 +49,18 @@ namespace TiskWASM.Server.Controllers
         }
 
         [HttpPost]
-        public async Task Create(dtUser model)
+        public async Task<IActionResult> Create(dtUser model)
         {
-            await repository.CreateAsync(model);            
+            try
+            {
+                var result = await context.Users.AddAsync(model);
+                await context.SaveChangesAsync();
+                return Ok(result.Entity);
+            }
+            catch
+            {
+                return BadRequest("Chyba při vytváření uživatele");
+            }
         }
 
         [HttpPost("upload")]

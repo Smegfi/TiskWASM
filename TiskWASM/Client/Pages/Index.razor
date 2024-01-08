@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using System.Web
 @inject HttpClient client
+@inject ISnackbar Snackbar
 
 <h2>Přidat tiskárnu zaměstnanci</h2>
 <MudPaper Class="pa-4">
@@ -57,9 +58,20 @@
     private async Task CreatePriner()
     {
         _loading = true;
-        await client.PostAsJsonAsync<dtSolution>("/api/solution", solution);
-        solution = new dtSolution();
-        tempUser = new dtUser();
+
+        var result = await client.PostAsJsonAsync<dtSolution>("/api/solution", solution);
+        if (result.IsSuccessStatusCode)
+        {
+            var entity = await result.Content.ReadFromJsonAsync<dtSolution>();
+            Snackbar.Add($"Byl vytvořený záznam s ID: {entity.Id}", Severity.Success);
+            this.tempUser = new dtUser();
+            this.solution = new dtSolution();
+        }
+        else
+        {
+            Snackbar.Add(await result.Content.ReadAsStringAsync(), Severity.Error);
+        }
+
         _loading = false;
     }
 
@@ -68,7 +80,7 @@
         try
         {
             emailHelper = string.Empty;
-            var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{tempUser.Email.ToLower()}");
+            var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{Parser(tempUser.Email)}");
             if (result != null)
             {
                 tempUser = result;
@@ -79,6 +91,19 @@
         {
             tempUser = new dtUser();
             emailHelper = "Nenalezeno v databázi";
+        }
+    }
+
+    private string Parser(string data)
+    {
+        var email = data.ToLower();
+        if (email.Contains("@praha10.cz"))
+        {
+            return email;
+        }
+        else
+        {
+            return email + "@praha10.cz";
         }
     }
 }

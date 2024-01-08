@@ -34,16 +34,13 @@
         var result = await client.PostAsJsonAsync<dtComment>("/api/comment", comment);
         if (result.IsSuccessStatusCode)
         {
-            var data = await result.Content.ReadAsStringAsync();
-            if (data != null)
-            {
-                Snackbar.Add("Komentář založený", Severity.Success);                
-                MudDialog.Close(DialogResult.Ok(data));
-            }
+            var entity = await result.Content.ReadFromJsonAsync<dtComment>();
+            Snackbar.Add($"Byl vytvořený komentář s ID: {entity.Id}", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(await result.Content.ReadAsStringAsync()));
         }
         else
         {
-            Snackbar.Add("Něco se nepovedlo, komentář nebyl vytvořený", Severity.Error);
+            Snackbar.Add(await result.Content.ReadAsStringAsync(), Severity.Error);
             MudDialog.Cancel();
         }
     }

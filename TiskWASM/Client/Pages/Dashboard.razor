@@ -1,0 +1,94 @@
+﻿@page "/dashboard"
+@inject HttpClient httpClient
+
+<h2>Dashboard</h2>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="4">            
+            <MudCard Style="height: 200px;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Počet záznamů</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.h4" Align="Align.Center">@Elements.Count()</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Style="height: 200px;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Počet uživatelů</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.h4" Align="Align.Center">@Users.Count()</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            <MudCard Style="height: 200px;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Typy tiskáren</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.h4" Align="Align.Center">@Printers.Count()</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudCard Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Poslední záznamy</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTable Items="@Elements.TakeLast(5).Reverse()" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+                        <HeaderContent>
+                            <MudTh>Nr</MudTh>
+                            <MudTh>Uživatel</MudTh>
+                            <MudTh>Požadovaná tiskárna</MudTh>
+                            <MudTh>Navrhovaná tiskárna</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Nr">@context.Id</MudTd>
+                                <MudTd DataLabel="Jméno zaměstnance">@Users.SingleOrDefault(x => x.Id == context.UserId).Name</MudTd>
+                            <MudTd DataLabel="Kancelář">@context.RequestedPrinter</MudTd>
+                            <MudTd DataLabel="Odbor">@context.SuggestedPrinter</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+    @code {
+    private IEnumerable<dtSolution> Elements = new List<dtSolution>();
+    private IEnumerable<dtUser> Users = new List<dtUser>();
+    private IEnumerable<dtPrinters> Printers = new List<dtPrinters>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await httpClient.GetFromJsonAsync<List<dtSolution>>("api/solution");
+        Users = await httpClient.GetFromJsonAsync<List<dtUser>>("api/user");
+        Printers = await httpClient.GetFromJsonAsync<List<dtPrinters>>("api/printer");
+        Elements = result;
+    }
+}

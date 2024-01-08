@@ -16,8 +16,8 @@
     </MudStack>
     <MudStack>
         <MudPaper Elevation="0" Class="pa-3">@user.Name</MudPaper>
-        <MudPaper Elevation="0" Class="pa-3">@solution.RequestedPrinter</MudPaper>
-        <MudPaper Elevation="0" Class="pa-3">@solution.SuggestedPrinter</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">@requested</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">@suggested</MudPaper>
         <MudPaper Elevation="0" Class="pa-3">@solution.Description</MudPaper>
     </MudStack>
 </MudPaper>
@@ -55,14 +55,54 @@
 
     private dtSolution solution = new dtSolution();
     private dtUser user = new dtUser();
-    private List<dtComment> comments = new List<dtComment>();       
+    private List<dtComment> comments = new List<dtComment>();
+    private string requested = string.Empty;
+    private string suggested = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        solution = await client.GetFromJsonAsync<dtSolution>($"/api/solution/{Id}");
-        user = await client.GetFromJsonAsync<dtUser>($"/api/user/{solution.UserId}");
-        comments = await client.GetFromJsonAsync<List<dtComment>>($"/api/comment/solution/{solution.Id}");
-    }
+        try
+        {
+            var result = await client.GetFromJsonAsync<dtSolution>($"/api/solution/{Id}");
+            this.solution = result;
+        }
+        catch
+        {
+            Snackbar.Add("Nepovedlo se načíst záznam", Severity.Error);
+        }
+
+        try
+        {
+            var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{solution.UserId}");
+            this.user = result;
+        }
+        catch
+        {
+            Snackbar.Add("Nepovedlo se načíst uživatele", Severity.Error);                        
+        }
+
+        try
+        {
+            var result = await client.GetFromJsonAsync<List<dtComment>>($"/api/comment/solution/{solution.Id}");
+            this.comments = result;
+        }
+        catch
+        {
+            Snackbar.Add("Nepovedlo se načíst komentáře", Severity.Error);            
+        }
+
+        try
+        {
+            var result = await client.GetFromJsonAsync<List<dtPrinters>>("/api/printer");
+            this.requested = result.SingleOrDefault(x => x.Id == solution.RequestedPrinter).Name;
+            this.suggested = result.SingleOrDefault(x => x.Id == solution.SuggestedPrinter).Name;
+        }
+        catch
+        {
+            Snackbar.Add("Nepovedlo se načíst tiskárny", Severity.Error);
+        }
+
+}
 
     private async Task CreateComment()
     {
@@ -80,7 +120,6 @@
         {
             dtComment test = JsonConvert.DeserializeObject<dtComment>((string)result.Data);
             comments.Add(test);
-            Snackbar.Add($"New ID is : {test.Id}", Severity.Info);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿@page "/add-printer"
 @inject HttpClient client
+@inject ISnackbar Snackbar
 
 <h2>Přidat tiskárnu</h2>
 
@@ -31,8 +32,18 @@
     private async Task CreatePrinter()
     {
         _loading = true;
-        await client.PostAsJsonAsync<dtPrinters>("/api/printer", tempPrinter);
-        tempPrinter = new dtPrinters();
+        var result = await client.PostAsJsonAsync<dtPrinters>("/api/printer", tempPrinter);
+
+        if (result.IsSuccessStatusCode)
+        {
+            var entity = await result.Content.ReadFromJsonAsync<dtPrinters>();
+            Snackbar.Add($"Byla vytvořena tiskárna s ID: {entity.Id}", Severity.Success);
+            tempPrinter = new dtPrinters();
+        }
+        else
+        {
+            Snackbar.Add(await result.Content.ReadAsStringAsync(), Severity.Error);            
+        }
         _loading = false;
     }
 }

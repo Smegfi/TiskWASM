@@ -70,6 +70,18 @@
                             <MudText Typo="Typo.subtitle1" Color="Color.Inherit">
                                 Počet vytvořných požadavků: @(Counter.TotalCount - Counter.Count)
                             </MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Inherit">
+                                ID zaměstnanců bez záznamů:
+                            </MudText>
+                            <MudText Typo="Typo.subtitle1" Color="Color.Inherit">
+                                @if (Counter.Ids is not null)
+                                {
+                                    foreach (var item in Counter.Ids)
+                                    {
+                                        <span>[ @item ]</span>
+                                    }
+                                }
+                            </MudText>
                         </MudPaper>
                     </MudCardContent>
                 </MudCard>

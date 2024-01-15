@@ -42,14 +42,37 @@
             </MudCard>
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-                </MudItem>
-            </MudGrid>
+                <MudCard Style="height: 100%;">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Splněno dle odboru</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudPaper Elevation="3" Class="p-2">
+                            <MudSelect T="string" Label="Odbor" @bind-Value="Odbor" SelectedValuesChanged="ValueChanged" AnchorOrigin="Origin.BottomCenter">
+                                @foreach (var item in _departments)
+                                {
+                                    <MudSelectItem Value="@(item)" />                                
+                                }
+                            </MudSelect>
+                        </MudPaper>
+                        <MudPaper Elevation="3" Class="p-2 mt-4">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Inherit">
+                                <b>@(100 - Percentage)%</b>
+                            </MudText>
+                            <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Value="@(100 - Percentage)" />
+                        </MudPaper>
+                        <MudPaper Elevation="3" Class="p-2 mt-4">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Inherit">
+                                Celkový počet uživatelů: @Counter.TotalCount
+                            </MudText>
+                            <MudText Typo="Typo.subtitle1" Color="Color.Inherit">
+                                Počet vytvořných požadavků: @(Counter.TotalCount - Counter.Count)
+                            </MudText>
+                        </MudPaper>
+                    </MudCardContent>
+                </MudCard>
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudCard Style="height: 100%;">
@@ -83,12 +106,27 @@
     private IEnumerable<dtSolution> Elements = new List<dtSolution>();
     private IEnumerable<dtUser> Users = new List<dtUser>();
     private IEnumerable<dtPrinters> Printers = new List<dtPrinters>();
+    private DashboardCounter Counter = new DashboardCounter();
+    private double Percentage = 0;
+    private string[] _departments = new string[30];
+    private string Odbor = "Odbor informatiky";
 
     protected override async Task OnInitializedAsync()
     {
         var result = await httpClient.GetFromJsonAsync<List<dtSolution>>("api/solution");
         Users = await httpClient.GetFromJsonAsync<List<dtUser>>("api/user");
         Printers = await httpClient.GetFromJsonAsync<List<dtPrinters>>("api/printer");
+        Counter = await httpClient.GetFromJsonAsync<DashboardCounter>($"api/dashboard/users?odbor={Odbor}");
+        _departments = await httpClient.GetFromJsonAsync<string[]>("/api/dashboard");
+
         Elements = result;
+
+        this.Percentage = Math.Round((Convert.ToDouble(this.Counter.Count) / Convert.ToDouble(this.Counter.TotalCount)) * 100.00, 2);
+    }
+
+    private async Task ValueChanged()
+    {
+        Counter = await httpClient.GetFromJsonAsync<DashboardCounter>($"api/dashboard/users?odbor={Odbor}");
+        this.Percentage = Math.Round((Convert.ToDouble(this.Counter.Count) / Convert.ToDouble(this.Counter.TotalCount)) * 100.00, 2);
     }
 }

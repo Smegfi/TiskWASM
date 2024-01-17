@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TiskWASM.Server.Data;
 using TiskWASM.Server.Data.Repositories;
 using TiskWASM.Shared;
@@ -29,6 +30,18 @@ namespace TiskWASM.Server.Controllers
         public async Task<dtSolution> Get(int id)
         {
             return await repository.ReadAsync(id);
+        }
+
+        [HttpGet("by-user/{id}")]
+        public async Task<bool> GetOccurenci(int id)
+        {
+            var user = await this.context.Solutions.FirstOrDefaultAsync(x=>x.UserId == id);
+
+            if (user is not null)
+            {
+                return true;
+            }
+            else { return false; }
         }
 
         [HttpPost]

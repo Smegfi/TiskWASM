@@ -2,6 +2,7 @@
 @using System.Web
 @inject HttpClient client
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <h2>Přidat tiskárnu zaměstnanci</h2>
 <MudPaper Class="pa-4">
@@ -80,17 +81,53 @@
         try
         {
             emailHelper = string.Empty;
-            var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{Parser(tempUser.Email)}");
-            if (result != null)
+            if (!string.IsNullOrWhiteSpace(tempUser.Office))
             {
-                tempUser = result;
-                solution.UserId = result.Id;
+                var result = await client.GetFromJsonAsync<List<dtUser>>($"/api/user/office/{tempUser.Office}");
+                if (result is not null)
+                {
+                    await SearchByOffice(result);
+                }
+            }
+            else
+            {
+                var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{Parser(tempUser.Email)}");
+                if (result != null)
+                {
+                    tempUser = result;
+                    solution.UserId = result.Id;
+                    await SearchForOcurencies(tempUser.Id);
+                }
             }
         }
         catch
         {
             tempUser = new dtUser();
             emailHelper = "Nenalezeno v databázi";
+        }
+    }
+
+    private async Task SearchForOcurencies(int UserId)
+    {
+        var result = await client.GetFromJsonAsync<bool>($"api/solution/by-user/{UserId}");
+        if (result)
+        {
+            Snackbar.Add("Záznam již existuje v databázi.", Severity.Warning);
+        }
+    }
+
+    public async Task SearchByOffice(List<dtUser> model)
+    {
+        var parameters = new DialogParameters<UserSearch> { { x => x.Users, model } };
+
+        var dialog = await DialogService.ShowAsync<UserSearch>("Zobrazení dle kanceláře", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            int UserId = int.Parse(result.Data.ToString());
+            tempUser = await client.GetFromJsonAsync<dtUser>($"api/user/{UserId}");
+            solution.UserId = UserId;
         }
     }
 

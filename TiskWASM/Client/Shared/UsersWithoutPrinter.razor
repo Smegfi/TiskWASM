@@ -1,0 +1,39 @@
+﻿@using Newtonsoft.Json
+@inject HttpClient client
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Uživatelé bez tiskárny
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTable Items="@Users" T="dtUser" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>Nr</MudTh>
+                <MudTh>Jméno</MudTh>
+                <MudTh>Kancelář</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nr">@context.Id</MudTd>
+                <MudTd DataLabel="Sign">@context.Name</MudTd>
+                <MudTd DataLabel="Name">@context.Office</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Zrušit</MudButton>
+    </DialogActions>
+</MudDialog>
+    @code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public List<dtUser> Users { get; set; } = new List<dtUser>();
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

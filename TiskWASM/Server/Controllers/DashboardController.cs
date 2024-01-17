@@ -52,5 +52,32 @@ namespace TiskWASM.Server.Controllers
             entity.TotalCount = ids.Count;
             return entity;
         }
+
+        [HttpGet("list-users")]
+        public async Task<IActionResult> GetById(string ids)
+        {
+            List<int> idList = new();
+            foreach (var item in ids.Split(","))
+            {
+                idList.Add(int.Parse(item));
+            }
+            try
+            {
+                List<dtUser> tempUsers = new();
+                foreach (var item in idList)
+                {
+                    var search = await this.context.Users.FindAsync(item);
+                    if (search != null)
+                    {
+                        tempUsers.Add(search);
+                    }
+                }
+                return Ok(tempUsers);
+            }
+            catch
+            {
+                return BadRequest("Chyba při načitání uživatelů");
+            }
+        }
     }
 }

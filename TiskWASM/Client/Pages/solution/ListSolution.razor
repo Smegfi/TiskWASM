@@ -52,7 +52,7 @@
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        if ($"{Users.SingleOrDefault(x => x.Id == element.UserId).Name}".Contains(searchString))
+        if ($"{Users.SingleOrDefault(x => x.Id == element.UserId).Name} {Users.SingleOrDefault(x => x.Id == element.UserId).Office}".Contains(searchString))
             return true;
         return false;
     }

@@ -2,6 +2,7 @@
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Net;
@@ -46,6 +47,12 @@ namespace TiskWASM.Server.Controllers
         public async Task<dtUser> FindById(int filter)
         {
             return await this.repository.FindById(filter);
+        }
+
+        [HttpGet("office/{office}")]
+        public async Task<List<dtUser>> FilterByOffice(string office)
+        {
+            return await context.Users.Where(x => x.Office == office).ToListAsync();
         }
 
         [HttpPost]

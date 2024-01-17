@@ -1,0 +1,66 @@
+﻿@using Newtonsoft.Json
+@inject HttpClient client
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Uživatelé v kanceláři
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTable Items="@Users" T="dtUser" Hover="true" Breakpoint="Breakpoint.Sm" OnRowClick="RowClickEvent">
+            <HeaderContent>
+                <MudTh>Nr</MudTh>
+                <MudTh>Jméno</MudTh>
+                <MudTh>Kancelář</MudTh>
+                <MudTh>Má záznam</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nr">@context.Id</MudTd>
+                <MudTd>@context.Name</MudTd>
+                <MudTd>@context.Office</MudTd>
+                <MudTd>
+                    @if (Solutions.Any(x=>x.UserId == context.Id))
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.SmokingRooms" Size="Size.Large" Color="Color.Success"></MudIcon>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.ThumbDown" Size="Size.Large" Color="Color.Error"></MudIcon>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Zrušit</MudButton>
+        </DialogActions>
+    </MudDialog>
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public List<dtUser> Users { get; set; } = new List<dtUser>();
+
+    public dtUser SelectedUser { get; set; } = new dtUser();
+
+    public List<dtSolution> Solutions = new List<dtSolution>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await client.GetFromJsonAsync<List<dtSolution>>("api/solution");
+        Solutions = result;
+    }
+
+    private async Task RowClickEvent(TableRowClickEventArgs<dtUser> tableRowClickEventArgs)
+    {
+        SelectedUser = tableRowClickEventArgs.Item;
+        MudDialog.Close(DialogResult.Ok(SelectedUser.Id));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

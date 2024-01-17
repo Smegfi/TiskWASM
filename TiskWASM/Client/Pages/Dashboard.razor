@@ -1,5 +1,7 @@
 ﻿@page "/dashboard"
+@using Newtonsoft.Json
 @inject HttpClient httpClient
+@inject IDialogService DialogService
 
 <h2>Dashboard</h2>
 
@@ -70,18 +72,7 @@
                             <MudText Typo="Typo.subtitle1" Color="Color.Inherit">
                                 Počet vytvořných požadavků: @(Counter.TotalCount - Counter.Count)
                             </MudText>
-                            <MudText Typo="Typo.h6" Color="Color.Inherit">
-                                ID zaměstnanců bez záznamů:
-                            </MudText>
-                            <MudText Typo="Typo.subtitle1" Color="Color.Inherit">
-                                @if (Counter.Ids is not null)
-                                {
-                                    foreach (var item in Counter.Ids)
-                                    {
-                                        <span>[ @item ]</span>
-                                    }
-                                }
-                            </MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowUserWithoutPrinter">Zobrazit další</MudButton>
                         </MudPaper>
                     </MudCardContent>
                 </MudCard>
@@ -140,5 +131,25 @@
     {
         Counter = await httpClient.GetFromJsonAsync<DashboardCounter>($"api/dashboard/users?odbor={Odbor}");
         this.Percentage = Math.Round((Convert.ToDouble(this.Counter.Count) / Convert.ToDouble(this.Counter.TotalCount)) * 100.00, 2);
+    }
+
+    private async Task ShowUserWithoutPrinter()
+    {
+        string idsFormat = string.Empty;
+        foreach (var item in Counter.Ids)
+        {
+            idsFormat += $"{item},";
+        }
+        idsFormat = idsFormat.Substring(0, idsFormat.Length - 1);
+        var result = await httpClient.GetFromJsonAsync<List<dtUser>>($"api/dashboard/list-users?ids={idsFormat}");
+
+        var parameters = new DialogParameters<UsersWithoutPrinter> { { x => x.Users, result } };
+
+        DialogOptions opt = new DialogOptions();
+        opt.MaxWidth = MaxWidth.Medium;
+        opt.FullWidth = true;
+        opt.DisableBackdropClick = true;
+
+        var dialog = await DialogService.ShowAsync<UsersWithoutPrinter>("Uživatelé bez tiskáren", parameters, opt);
     }
 }

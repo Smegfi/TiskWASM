@@ -102,6 +102,31 @@
                 </MudCardContent>
             </MudCard>
         </MudItem>
+        <MudItem xs="12">
+            <MudCard Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Chybějící záznamy</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                        <MudTable Items="@UsersWithouPrinter" T="dtUser" Hover="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>Nr</MudTh>
+                                <MudTh>Jméno</MudTh>
+                                <MudTh>Kancelář</MudTh>
+                                <MudTh>Odbor</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Nr">@context.Id</MudTd>
+                                <MudTd DataLabel="Sign">@context.Name</MudTd>
+                                <MudTd DataLabel="Name">@context.Office</MudTd>
+                                <MudTd DataLabel="Name">@context.Department</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
     </MudGrid>
 </MudContainer>
 
@@ -109,6 +134,7 @@
     private IEnumerable<dtSolution> Elements = new List<dtSolution>();
     private IEnumerable<dtUser> Users = new List<dtUser>();
     private IEnumerable<dtPrinters> Printers = new List<dtPrinters>();
+    private IEnumerable<dtUser> UsersWithouPrinter = new List<dtUser>();
     private DashboardCounter Counter = new DashboardCounter();
     private double Percentage = 0;
     private string[] _departments = new string[30];
@@ -121,6 +147,8 @@
         Printers = await httpClient.GetFromJsonAsync<List<dtPrinters>>("api/printer");
         Counter = await httpClient.GetFromJsonAsync<DashboardCounter>($"api/dashboard/users?odbor={Odbor}");
         _departments = await httpClient.GetFromJsonAsync<string[]>("/api/dashboard");
+
+        UsersWithouPrinter = await httpClient.GetFromJsonAsync<List<dtUser>>("api/solution/withoutprinter");
 
         Elements = result;
 

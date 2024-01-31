@@ -1,5 +1,6 @@
 ﻿@page "/list-user"
 @inject HttpClient client
+@inject IDialogService DialogService
 
 <h2>Všichni uživatelé</h2>
 
@@ -15,6 +16,7 @@
         <MudTh>Kancelář</MudTh>
         <MudTh>Odbor</MudTh>
         <MudTh>Email</MudTh>
+        <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Nr">@context.Id</MudTd>
@@ -22,6 +24,9 @@
         <MudTd DataLabel="Kancelář">@context.Office</MudTd>
         <MudTd DataLabel="Odbor">@context.Department</MudTd>
         <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="">
+            <MudButton OnClick="() => OpenDialog(context.Id)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error">Smazat</MudButton>
+        </MudTd>
     </RowTemplate>
 </MudTable>
 
@@ -46,5 +51,19 @@
         if ($"{element.Name} {element.Office} {element.Department}".Contains(searchString))
             return true;
         return false;
+    }
+
+    private async Task OpenDialog(int id)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<ConfirmUserDelete>("Smazání uživatele", options);
+        var result = dialog.Result;
+        if (!result.IsCanceled)
+        {
+            await client.DeleteAsync($"api/user/{id}");
+            var temp = this.Users.ToList();
+            temp.Remove(temp.FirstOrDefault(x => x.Id == id));
+            this.Users = temp;
+        }
     }
 }

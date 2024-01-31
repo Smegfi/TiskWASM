@@ -44,6 +44,30 @@ namespace TiskWASM.Server.Controllers
             else { return false; }
         }
 
+        [HttpGet("withoutprinter")]
+        public async Task<IActionResult> GetWithouPrinter()
+        {
+            try
+            {
+                var usr = await context.Users.ToListAsync();
+                var usersWithouPrinter = new List<dtUser>();
+                foreach (var user in usr)
+                {
+                    if (!await context.Solutions.AnyAsync(x => x.UserId == user.Id))
+                    {
+                        usersWithouPrinter.Add(user);
+                    }
+                }
+                return Ok(usersWithouPrinter);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Nepodařilo se načíst uživatele");
+            }
+
+
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(dtSolution model)
         {

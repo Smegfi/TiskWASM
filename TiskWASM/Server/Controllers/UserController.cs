@@ -84,6 +84,14 @@ namespace TiskWASM.Server.Controllers
             await FromFileToDatabase(path);
         }
 
+        [HttpDelete("{id}")]
+        public async Task Delete(int id)
+        {
+            var user = await context.Users.FindAsync(id);
+            context.Users.Remove(user);
+            await context.SaveChangesAsync();
+        }
+
         private async Task FromFileToDatabase(string filename)
         {
             List<csvKontakt> users = new List<csvKontakt>();

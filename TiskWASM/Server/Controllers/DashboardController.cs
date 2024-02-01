@@ -1,11 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CsvHelper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore.Query;
+using System.Globalization;
 using System.Reflection.Metadata.Ecma335;
 using TiskWASM.Server.Data;
 using TiskWASM.Shared;
+using TiskWASM.Shared.Csv;
 
 namespace TiskWASM.Server.Controllers
 {
@@ -77,6 +82,50 @@ namespace TiskWASM.Server.Controllers
             catch
             {
                 return BadRequest("Chyba při načitání uživatelů");
+            }
+        }
+
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportExcel()
+        {
+            List<csvExport> export = new();
+
+            try
+            {
+                List<dtPrinters> printerTypes = await context.Printers.ToListAsync();
+                foreach (var item in await context.Solutions.ToListAsync())
+                {
+                    dtUser user = await context.Users.FirstOrDefaultAsync(x => x.Id == item.UserId);
+                    List<dtComment> comments = await context.Comments.Where(x => x.SolutionId == item.Id).ToListAsync();
+
+                    csvExport model = new csvExport() { };
+                
+                    model.UserID = item.UserId;
+                    model.Name = user.Name;
+                    model.Email = user.Email;
+                    model.Department = user.Department;
+                    model.Office = user.Office;
+                    model.SolutionID = item.Id;
+                    model.Description = item.Description;
+                    model.RequestedPrinter = printerTypes.FirstOrDefault(x => x.Id == item.RequestedPrinter).Name;
+                    model.SuggestedPrinter = printerTypes.FirstOrDefault(x => x.Id == item.SuggestedPrinter).Name;
+                    export.Add(model);
+                }
+
+                string path = @"P:\Praha 10\TiskWASM\TiskWASM\Client\wwwroot\files";
+                string filename = Path.GetRandomFileName().Replace(".", "") + ".csv";
+
+                using (var writer = new StreamWriter(Path.Combine(path, filename)))
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    csv.WriteRecord(export);
+                }
+
+                return Ok(filename);
+            }
+            catch
+            {
+                return BadRequest("Chyba vole");
             }
         }
     }

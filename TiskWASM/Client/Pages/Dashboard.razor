@@ -2,8 +2,13 @@
 @using Newtonsoft.Json
 @inject HttpClient httpClient
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
 <h2>Dashboard</h2>
+
+<MudButton Variant="Variant.Filled" OnClick="DownloadFileFromURL">
+    Stáhnout záznamy
+</MudButton>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudGrid>
@@ -130,6 +135,16 @@
     </MudGrid>
 </MudContainer>
 
+    <script>
+        window.triggerFileDownload = (fileName, url) => {
+            const anchorElement = document.createElement('a');
+            anchorElement.href = url;
+            anchorElement.download = fileName ?? '';
+            anchorElement.click();
+            anchorElement.remove();
+        }
+    </script>
+
     @code {
     private IEnumerable<dtSolution> Elements = new List<dtSolution>();
     private IEnumerable<dtUser> Users = new List<dtUser>();
@@ -179,5 +194,22 @@
         opt.DisableBackdropClick = true;
 
         var dialog = await DialogService.ShowAsync<UsersWithoutPrinter>("Uživatelé bez tiskáren", parameters, opt);
+    }
+
+    private async Task DownloadFileFromURL()
+    {
+        string result = await httpClient.GetFromJsonAsync<string>("api/dashboard/export");
+
+        if (result == "Chyba vole")
+        {
+            Console.WriteLine("Chyba vole");
+        }
+        else
+        {
+            var fileName = "export.csv";
+            var fileURL = $"\\wwwroot\\{result}";
+            await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);            
+        }
+
     }
 }

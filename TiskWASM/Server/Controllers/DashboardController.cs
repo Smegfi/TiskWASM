@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
@@ -6,8 +7,10 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Query;
+using MudBlazor.Extensions;
 using System.Globalization;
 using System.Reflection.Metadata.Ecma335;
+using System.Text;
 using TiskWASM.Server.Data;
 using TiskWASM.Shared;
 using TiskWASM.Shared.Csv;
@@ -19,10 +22,12 @@ namespace TiskWASM.Server.Controllers
     public class DashboardController : ControllerBase
     {
         private DatabaseContext context;
+        private IConfiguration config;
 
         public DashboardController(IConfiguration config)
         {
             this.context = new DatabaseContext(config);
+            this.config = config;
         }
 
         [HttpGet]
@@ -95,37 +100,51 @@ namespace TiskWASM.Server.Controllers
                 List<dtPrinters> printerTypes = await context.Printers.ToListAsync();
                 foreach (var item in await context.Solutions.ToListAsync())
                 {
-                    dtUser user = await context.Users.FirstOrDefaultAsync(x => x.Id == item.UserId);
+                    dtUser user = await context.Users.FirstOrDefaultAsync(x=>x.Id == item.UserId);
                     List<dtComment> comments = await context.Comments.Where(x => x.SolutionId == item.Id).ToListAsync();
 
-                    csvExport model = new csvExport() { };
-                
-                    model.UserID = item.UserId;
-                    model.Name = user.Name;
-                    model.Email = user.Email;
-                    model.Department = user.Department;
-                    model.Office = user.Office;
-                    model.SolutionID = item.Id;
-                    model.Description = item.Description;
-                    model.RequestedPrinter = printerTypes.FirstOrDefault(x => x.Id == item.RequestedPrinter).Name;
-                    model.SuggestedPrinter = printerTypes.FirstOrDefault(x => x.Id == item.SuggestedPrinter).Name;
+                    var model = new csvExport()
+                    {
+                        UserID = item.UserId,
+                        Name = user.Name,
+                        Email = user.Email,
+                        Department = user.Department,
+                        Office = user.Office,
+
+                        SolutionID = item.Id,
+                        RequestedPrinter = printerTypes.FirstOrDefault(x=>x.Id == item.RequestedPrinter).Name,
+                        SuggestedPrinter = printerTypes.FirstOrDefault(x=>x.Id == item.SuggestedPrinter).Name,
+                        Description = item.Description
+                    };
+                    try
+                    {
+                        model.Comment1 = comments[0].Description;
+                        model.Comment2 = comments[1].Description;
+                        model.Comment3 = comments[2].Description;
+                    }
+                    catch { }
                     export.Add(model);
                 }
 
-                string path = @"P:\Praha 10\TiskWASM\TiskWASM\Client\wwwroot\files";
+                string path = config.GetValue<string>("FileUploads");
                 string filename = Path.GetRandomFileName().Replace(".", "") + ".csv";
 
-                using (var writer = new StreamWriter(Path.Combine(path, filename)))
-                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                CsvConfiguration configuration = new CsvConfiguration(CultureInfo.InvariantCulture);
+                configuration.Delimiter = ";";
+
+                using (var writer = new StreamWriter(Path.Combine(path, filename), false, Encoding.UTF8))
+                using (var csv = new CsvWriter(writer, configuration))
                 {
-                    csv.WriteRecord(export);
+                    csv.WriteRecords(export);
                 }
 
-                return Ok(filename);
+                var buffer = System.IO.File.ReadAllBytes(Path.Combine(path,filename));
+
+                return File(buffer, "application/csv", "export.csv");
             }
-            catch
+            catch (Exception e)
             {
-                return BadRequest("Chyba vole");
+                return BadRequest(e);
             }
         }
     }

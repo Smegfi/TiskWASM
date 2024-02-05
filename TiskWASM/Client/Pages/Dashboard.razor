@@ -6,11 +6,11 @@
 
 <h2>Dashboard</h2>
 
-<MudButton Variant="Variant.Filled" OnClick="DownloadFileFromURL">
-    Stáhnout záznamy
-</MudButton>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <a class="btn btn-success" href="@(httpClient.BaseAddress+"api/dashboard/export")">
+        Stáhnout .csv Export
+    </a>
     <MudGrid>
         <MudItem xs="12" sm="6" md="4">            
             <MudCard Style="height: 200px;">
@@ -207,7 +207,7 @@
         else
         {
             var fileName = "export.csv";
-            var fileURL = $"\\wwwroot\\{result}";
+            var fileURL = $"/wwwroot/{result}";
             await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);            
         }
 

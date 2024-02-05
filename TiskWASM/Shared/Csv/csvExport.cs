@@ -9,18 +9,16 @@ namespace TiskWASM.Shared.Csv
     public class csvExport
     {
         public int UserID { get; set; }
-        public string Name { get; set; } = "NULL";
-        public string Email { get; set; } = "NULL";
-        public string Department { get; set; } = "NULL";
-        public string Office { get; set; } = "NULL";
-
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+        public string Office { get; set; } = string.Empty;
         public int SolutionID { get; set; }
-        public string RequestedPrinter { get; set; } = "NULL";
-        public string SuggestedPrinter { get; set; } = "NULL";
-        public string Description { get; set; } = "NULL";
-        public string Comment1 { get; set; } = "NULL";
-        public string Comment2 { get; set; } = "NULL";
-        public string Comment3 { get; set; } = "NULL";
-        public string Comment4 { get; set; } = "NULL";
+        public string RequestedPrinter { get; set; } = string.Empty;
+        public string SuggestedPrinter { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Comment1 { get; set; } = string.Empty;
+        public string Comment2 { get; set; } = string.Empty;
+        public string Comment3 { get; set; } = string.Empty;
     }
 }

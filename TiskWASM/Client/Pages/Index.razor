@@ -13,13 +13,13 @@
         </MudPaper>
         <MudButton Class="mb-4" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="SearchUser">Hledat zaměstnance</MudButton>
         <MudPaper Class="d-flex gap-4 mb-4">
-            <MudSelect @bind-Value="@solution.RequestedPrinter" Label="Požadovaná tiskárna" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+            <MudSelect @bind-Value="@solution.RequestedPrinter" Label="Požadované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
                 @foreach (var item in printers)
                 {
                     <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
                 }
             </MudSelect>
-            <MudSelect @bind-Value="@solution.SuggestedPrinter" Label="Navrhovaná tiskárna" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+            <MudSelect @bind-Value="@solution.SuggestedPrinter" Label="Navrhované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
                 @foreach (var item in printers)
                 {   
                     <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>                
@@ -47,13 +47,13 @@
     private MudForm form;
     private dtSolution solution = new dtSolution();
     private dtUser tempUser = new dtUser();
-    private List<dtPrinters> printers = new List<dtPrinters>();
+    private List<dtDevice> printers = new List<dtDevice>();
     private bool _loading = false;
     private string emailHelper = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        printers = await client.GetFromJsonAsync<List<dtPrinters>>("/api/printer");
+        printers = await client.GetFromJsonAsync<List<dtDevice>>("/api/device");
     }
 
     private async Task CreatePriner()

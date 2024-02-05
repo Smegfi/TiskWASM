@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 using TiskWASM.Server.Data;
 
 namespace TiskWASM
@@ -13,6 +14,12 @@ namespace TiskWASM
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
+
+            var config = builder.Configuration.GetConnectionString("PrimaryDb");
+            builder.Services.AddDbContext<DatabaseContext>(options =>
+            {
+                options.UseSqlite(config);
+            });
 
             var app = builder.Build();
 

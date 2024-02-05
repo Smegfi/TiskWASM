@@ -3,7 +3,7 @@
 @inject ISnackbar Snackbar
 
 <h2>Přidat uživatele</h2>
-<MudPaper Class="pa-4">
+<MudPaper Class="pa-4 mb-4">
     <MudForm @ref="form">
         <MudTextField T="string" Label="Jméno a příjemní" Required="true" @bind-Value="tempUser.Name"/>
         <MudTextField T="string" Label="Kancelář" Required="true" @bind-Value="tempUser.Office"/>

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TiskWASM.Server.Data;
-using TiskWASM.Server.Data.Repositories;
 using TiskWASM.Shared;
 
 namespace TiskWASM.Server.Controllers
@@ -11,25 +10,23 @@ namespace TiskWASM.Server.Controllers
     [ApiController]
     public class SolutionController : ControllerBase
     {
-        private SolutionRepository repository;
         private DatabaseContext context;
 
         public SolutionController(IConfiguration config)
         {
-            this.repository = new SolutionRepository(config);
             this.context = new DatabaseContext(config);
         }
 
         [HttpGet]
         public async Task<List<dtSolution>> Get()
         {
-            return await repository.ReadAsync();
+            return await this.context.Solutions.ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<dtSolution> Get(int id)
         {
-            return await repository.ReadAsync(id);
+            return await this.context.Solutions.FindAsync(id);
         }
 
         [HttpGet("by-user/{id}")]

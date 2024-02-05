@@ -33,7 +33,7 @@
     @code {
     private IEnumerable<dtSolution> Solutions = new List<dtSolution>();
     private List<dtUser> Users = new List<dtUser>();
-    private List<dtPrinters> Printers = new List<dtPrinters>();
+    private List<dtDevice> Printers = new List<dtDevice>();
     private bool _loading = false;
     string searchString = string.Empty;
 
@@ -41,7 +41,7 @@
     {
         _loading = true;
         Solutions = await client.GetFromJsonAsync<List<dtSolution>>("/api/solution");
-        Printers = await client.GetFromJsonAsync<List<dtPrinters>>("/api/printer");
+        Printers = await client.GetFromJsonAsync<List<dtDevice>>("/api/printer");
         Users = await client.GetFromJsonAsync<List<dtUser>>("/api/user");
         _loading = false;
     }

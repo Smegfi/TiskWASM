@@ -9,7 +9,6 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using TiskWASM.Server.Data;
-using TiskWASM.Server.Data.Repositories;
 using TiskWASM.Shared;
 using TiskWASM.Shared.Csv;
 
@@ -19,13 +18,11 @@ namespace TiskWASM.Server.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private UserRepository repository;
         private readonly IWebHostEnvironment env;
         private readonly IConfiguration configuration;
         private DatabaseContext context;
         public UserController(IConfiguration config, IWebHostEnvironment env)
         {
-            this.repository = new UserRepository(config);
             this.configuration = config;
             this.env = env;
             this.context = new DatabaseContext(config);
@@ -34,19 +31,19 @@ namespace TiskWASM.Server.Controllers
         [HttpGet]
         public async Task<List<dtUser>> Get()
         {
-            return await this.repository.ReadAsync();
+            return await this.context.Users.ToListAsync();
         }
 
         [HttpGet("{filter}")]
         public async Task<dtUser> Filter(string filter)
         {
-            return await this.repository.FindByEmail(filter);
+            return await this.context.Users.Where(x=>x.Email.ToLowerInvariant() == filter.ToLowerInvariant()).SingleOrDefaultAsync();
         }
 
         [HttpGet("{filter:int}")]
         public async Task<dtUser> FindById(int filter)
         {
-            return await this.repository.FindById(filter);
+            return await this.context.Users.FindAsync(filter);
         }
 
         [HttpGet("office/{office}")]
@@ -132,7 +129,8 @@ namespace TiskWASM.Server.Controllers
                     Office = item.Office
                 };
 
-                await this.repository.CreateAsync(u);
+                await this.context.Users.AddAsync(u);
+                await this.context.SaveChangesAsync();
             }
         }
     }

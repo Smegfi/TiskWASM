@@ -4,13 +4,15 @@
 @inject IDialogService DialogService
 @inject IJSRuntime JS
 
-<h2>Dashboard</h2>
-
-
-<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+<div class="d-flex flex-row justify-content-between oi-align-center mb-4">
+    <h2>Dashboard</h2>
     <a class="btn btn-success" href="@(httpClient.BaseAddress+"api/dashboard/export")">
         Stáhnout .csv Export
     </a>
+</div>
+
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudGrid>
         <MudItem xs="12" sm="6" md="4">            
             <MudCard Style="height: 200px;">
@@ -40,7 +42,7 @@
             <MudCard Style="height: 200px;">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Typy tiskáren</MudText>
+                        <MudText Typo="Typo.h6">Počet typů zařízení</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
@@ -148,7 +150,7 @@
     @code {
     private IEnumerable<dtSolution> Elements = new List<dtSolution>();
     private IEnumerable<dtUser> Users = new List<dtUser>();
-    private IEnumerable<dtPrinters> Printers = new List<dtPrinters>();
+    private IEnumerable<dtDevice> Printers = new List<dtDevice>();
     private IEnumerable<dtUser> UsersWithouPrinter = new List<dtUser>();
     private DashboardCounter Counter = new DashboardCounter();
     private double Percentage = 0;
@@ -159,7 +161,7 @@
     {
         var result = await httpClient.GetFromJsonAsync<List<dtSolution>>("api/solution");
         Users = await httpClient.GetFromJsonAsync<List<dtUser>>("api/user");
-        Printers = await httpClient.GetFromJsonAsync<List<dtPrinters>>("api/printer");
+        Printers = await httpClient.GetFromJsonAsync<List<dtDevice>>("api/device");
         Counter = await httpClient.GetFromJsonAsync<DashboardCounter>($"api/dashboard/users?odbor={Odbor}");
         _departments = await httpClient.GetFromJsonAsync<string[]>("/api/dashboard");
 

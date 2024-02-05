@@ -4,7 +4,7 @@
 
         </MudImage>
         <MudText Typo="Typo.h6" Class="px-4" Color="Color.Default">PRAHA 10</MudText>
-        <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">Tiskárny</MudText>
+        <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">Sběr požadavku</MudText>
     </MudPaper>
     <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>    
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AddCircle">Přidat tiskárnu uživateli</MudNavLink>    
@@ -14,15 +14,15 @@
         <MudNavLink Href="/add-user" Icon="@Icons.Material.Filled.PersonAdd">Přidat</MudNavLink>
         <MudNavLink Href="/import-user" Icon="@Icons.Material.Filled.ImportExport">Hromadný import</MudNavLink>
     </MudNavGroup>
-    <MudNavGroup Title="Tiskárny" Icon="@Icons.Material.Filled.Print" Expanded="_prnExpand">
-        <MudNavLink Href="/list-printer" Icon="@Icons.Material.Filled.ViewList">Zobrazit tiskárny</MudNavLink>
-        <MudNavLink Href="/add-printer" Icon="@Icons.Material.Filled.AddCircle">Přidat tiskárnu</MudNavLink>
+    <MudNavGroup Title="Zařízení" Icon="@Icons.Material.Filled.Devices" Expanded="_devExpand">
+        <MudNavLink Href="/list-device" Icon="@Icons.Material.Filled.ViewList">Zobrazit zařízení</MudNavLink>
+        <MudNavLink Href="/add-device" Icon="@Icons.Material.Filled.AddCircle">Přidat zařízení</MudNavLink>
     </MudNavGroup>
 </MudNavMenu>
 
 @code {
     private bool collapseNavMenu = true;
-    private bool _prnExpand = false;
+    private bool _devExpand = false;
     private bool _usrExpand = false;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;

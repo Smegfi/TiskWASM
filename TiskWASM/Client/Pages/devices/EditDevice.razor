@@ -1,0 +1,65 @@
+﻿@page "/edit-device/{Id:int}"
+@inject HttpClient client
+@inject ISnackbar Snackbar
+
+<h2>Upravit zařízení</h2>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudForm @ref="form">
+        <MudTextField T="string" Label="Název zařízení" Required="true" @bind-Value="formDevice.Name" />
+        <MudTextField T="string" Label="Popis zařízení" Placeholder="Notebook, numerická klávesnice, bez operačního systému..." Required="true" @bind-Value="formDevice.Description" />
+    </MudForm>
+</MudPaper>
+<MudPaper Class="pa-4">
+    @if (_loading)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            Odesílám
+        </MudButton>
+    }
+    else
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateDevice">Upravit</MudButton>
+    }
+</MudPaper>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private MudForm form;
+    private dtDevice formDevice = new dtDevice();
+    private bool _loading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await client.GetFromJsonAsync<dtDevice>($"/api/device/{Id}");
+        if (result != null)
+        {
+            formDevice = result;
+        }
+        else
+        {
+            Snackbar.Add("Zařízení nenalezeno", Severity.Error);
+        }
+    }
+
+    private async Task CreateDevice()
+    {
+        _loading = true;
+        var result = await client.PutAsJsonAsync<dtDevice>("/api/device", formDevice);
+
+        if (result.IsSuccessStatusCode)
+        {
+            var entity = await result.Content.ReadFromJsonAsync<dtDevice>();
+            Snackbar.Add($"Bylo upraveno zařízení \"{entity.Name}\"", Severity.Success);
+            formDevice = new dtDevice();
+        }
+        else
+        {
+            Snackbar.Add(await result.Content.ReadAsStringAsync(), Severity.Error);
+        }
+        _loading = false;
+    }
+}

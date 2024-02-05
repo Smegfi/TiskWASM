@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TiskWASM.Server.Data;
-using TiskWASM.Server.Data.Repositories;
 using TiskWASM.Shared;
 
 namespace TiskWASM.Server.Controllers
@@ -10,23 +10,21 @@ namespace TiskWASM.Server.Controllers
     [ApiController]
     public class CommentController : ControllerBase
     {
-        private CommentRepository repository;
         private DatabaseContext context;
         public CommentController(IConfiguration config)
         {
-            this.repository = new CommentRepository(config);
             this.context = new DatabaseContext(config);
         }
 
         [HttpGet]
         public async Task<List<dtComment>> Get()
         {
-            return await repository.ReadAsync();
+            return await this.context.Comments.ToListAsync();
         }
         [HttpGet("solution/{id:int}")]
         public async Task<List<dtComment>> Get(int id)
         {
-            return await repository.FindBySolution(id);
+            return await this.context.Comments.Where(x=>x.SolutionId == id).ToListAsync();
         }
 
         [HttpPost]

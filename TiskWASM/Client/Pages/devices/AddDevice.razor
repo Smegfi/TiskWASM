@@ -1,0 +1,49 @@
+﻿@page "/add-device"
+@inject HttpClient client
+@inject ISnackbar Snackbar
+
+<h2>Přidat zařízení</h2>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudForm @ref="form">
+        <MudTextField T="string" Label="Název zařízení" Required="true" @bind-Value="formDevice.Name" />
+        <MudTextField T="string" Label="Popis zařízení" Placeholder="Notebook, numerická klávesnice, bez operačního systému..." Required="true" @bind-Value="formDevice.Description" />
+    </MudForm>
+</MudPaper>
+<MudPaper Class="pa-4">
+    @if (_loading)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+            Odesílám
+        </MudButton>
+    }
+    else
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateDevice">Uložit</MudButton>
+    }
+</MudPaper>
+
+@code {
+    private MudForm form;
+    private dtDevice formDevice = new dtDevice();
+    private bool _loading = false;
+
+    private async Task CreateDevice()
+    {
+        _loading = true;
+        var result = await client.PostAsJsonAsync<dtDevice>("/api/device", formDevice);
+
+        if (result.IsSuccessStatusCode)
+        {
+            var entity = await result.Content.ReadFromJsonAsync<dtDevice>();
+            Snackbar.Add($"Bylo vytvořeno nové zařízení", Severity.Success);
+            formDevice = new dtDevice();
+        }
+        else
+        {
+            Snackbar.Add(await result.Content.ReadAsStringAsync(), Severity.Error);
+        }
+        _loading = false;
+    }
+}

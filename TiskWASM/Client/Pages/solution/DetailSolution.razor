@@ -93,7 +93,7 @@
 
         try
         {
-            var result = await client.GetFromJsonAsync<List<dtPrinters>>("/api/printer");
+            var result = await client.GetFromJsonAsync<List<dtDevice>>("/api/printer");
             this.requested = result.SingleOrDefault(x => x.Id == solution.RequestedPrinter).Name;
             this.suggested = result.SingleOrDefault(x => x.Id == solution.SuggestedPrinter).Name;
         }

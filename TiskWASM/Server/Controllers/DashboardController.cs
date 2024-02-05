@@ -97,7 +97,7 @@ namespace TiskWASM.Server.Controllers
 
             try
             {
-                List<dtPrinters> printerTypes = await context.Printers.ToListAsync();
+                List<dtDevice> printerTypes = await context.Devices.ToListAsync();
                 foreach (var item in await context.Solutions.ToListAsync())
                 {
                     dtUser user = await context.Users.FirstOrDefaultAsync(x=>x.Id == item.UserId);

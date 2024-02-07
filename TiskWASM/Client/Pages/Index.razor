@@ -1,26 +1,28 @@
 ﻿@page "/"
 @using System.Web
+@using TiskWASM.Shared.Forms
 @inject HttpClient client
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<h2>Přidat tiskárnu zaměstnanci</h2>
+<h2>Přidat zařízení zaměstnanci</h2>
 <MudPaper Class="pa-4">
     <MudForm @ref="form">
-        <MudPaper Class="d-flex gap-3 mb-4">
-            <MudTextField @bind-Value="@tempUser.Email" HelperText="@emailHelper" Label="Email" Variant="Variant.Filled"></MudTextField>
-            <MudTextField @bind-Value="@tempUser.Office" Label="Kancelář" Variant="Variant.Filled"></MudTextField>
+        <MudPaper Class="d-flex gap-3 mb-4">            
+            <UserSearchField @bind-User="@formUser"/>
         </MudPaper>
-        <MudButton Class="mb-4" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="SearchUser">Hledat zaměstnance</MudButton>
+
+        <MudDivider />
+
         <MudPaper Class="d-flex gap-4 mb-4">
-            <MudSelect @bind-Value="@solution.RequestedPrinter" Label="Požadované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
-                @foreach (var item in printers)
+            <MudSelect @bind-Value="@solution.RequestedDevice" Label="Požadované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var item in Devices)
                 {
                     <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
                 }
             </MudSelect>
-            <MudSelect @bind-Value="@solution.SuggestedPrinter" Label="Navrhované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
-                @foreach (var item in printers)
+            <MudSelect @bind-Value="@solution.SuggestedDevice" Label="Navrhované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var item in Devices)
                 {   
                     <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>                
                 }
@@ -39,33 +41,34 @@
     }
     else
     {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreatePriner">Uložit</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateSolution">Uložit</MudButton>
     }
 </MudPaper>
+
 
 @code {
     private MudForm form;
     private dtSolution solution = new dtSolution();
-    private dtUser tempUser = new dtUser();
-    private List<dtDevice> printers = new List<dtDevice>();
+    private dtUser formUser = new dtUser();
+    private List<dtDevice> Devices = new List<dtDevice>();
     private bool _loading = false;
     private string emailHelper = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        printers = await client.GetFromJsonAsync<List<dtDevice>>("/api/device");
+        this.Devices = await client.GetFromJsonAsync<List<dtDevice>>("/api/device");
     }
 
-    private async Task CreatePriner()
+    private async Task CreateSolution()
     {
         _loading = true;
-
+        solution.UserId = formUser.Id;
         var result = await client.PostAsJsonAsync<dtSolution>("/api/solution", solution);
         if (result.IsSuccessStatusCode)
         {
             var entity = await result.Content.ReadFromJsonAsync<dtSolution>();
             Snackbar.Add($"Byl vytvořený záznam s ID: {entity.Id}", Severity.Success);
-            this.tempUser = new dtUser();
+            this.formUser = new dtUser();
             this.solution = new dtSolution();
         }
         else
@@ -74,73 +77,5 @@
         }
 
         _loading = false;
-    }
-
-    private async Task SearchUser()
-    {
-        try
-        {
-            emailHelper = string.Empty;
-            if (!string.IsNullOrWhiteSpace(tempUser.Office))
-            {
-                var result = await client.GetFromJsonAsync<List<dtUser>>($"/api/user/office/{tempUser.Office}");
-                if (result is not null)
-                {
-                    await SearchByOffice(result);
-                }
-            }
-            else
-            {
-                var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{Parser(tempUser.Email)}");
-                if (result != null)
-                {
-                    tempUser = result;
-                    solution.UserId = result.Id;
-                    await SearchForOcurencies(tempUser.Id);
-                }
-            }
-        }
-        catch
-        {
-            tempUser = new dtUser();
-            emailHelper = "Nenalezeno v databázi";
-        }
-    }
-
-    private async Task SearchForOcurencies(int UserId)
-    {
-        var result = await client.GetFromJsonAsync<bool>($"api/solution/by-user/{UserId}");
-        if (result)
-        {
-            Snackbar.Add("Záznam již existuje v databázi.", Severity.Warning);
-        }
-    }
-
-    public async Task SearchByOffice(List<dtUser> model)
-    {
-        var parameters = new DialogParameters<UserSearch> { { x => x.Users, model } };
-
-        var dialog = await DialogService.ShowAsync<UserSearch>("Zobrazení dle kanceláře", parameters);
-        var result = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            int UserId = int.Parse(result.Data.ToString());
-            tempUser = await client.GetFromJsonAsync<dtUser>($"api/user/{UserId}");
-            solution.UserId = UserId;
-        }
-    }
-
-    private string Parser(string data)
-    {
-        var email = data.ToLower();
-        if (email.Contains("@praha10.cz"))
-        {
-            return email;
-        }
-        else
-        {
-            return email + "@praha10.cz";
-        }
     }
 }

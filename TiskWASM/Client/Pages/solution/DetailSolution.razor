@@ -10,8 +10,8 @@
 <MudPaper Class="d-flex mb-4 p-2">
     <MudStack>
         <MudPaper Elevation="0" Class="pa-3">Jméno</MudPaper>
-        <MudPaper Elevation="0" Class="pa-3">Požadovaná tiskárna</MudPaper>
-        <MudPaper Elevation="0" Class="pa-3">Navrhovaná tiskárna</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">Požadované zařízení</MudPaper>
+        <MudPaper Elevation="0" Class="pa-3">Navrhované zařízení</MudPaper>
         <MudPaper Elevation="0" Class="pa-3">Popis, vyjádření</MudPaper>
     </MudStack>
     <MudStack>
@@ -93,9 +93,9 @@
 
         try
         {
-            var result = await client.GetFromJsonAsync<List<dtDevice>>("/api/printer");
-            this.requested = result.SingleOrDefault(x => x.Id == solution.RequestedPrinter).Name;
-            this.suggested = result.SingleOrDefault(x => x.Id == solution.SuggestedPrinter).Name;
+            var result = await client.GetFromJsonAsync<List<dtDevice>>("/api/device");
+            this.requested = result.SingleOrDefault(x => x.Id == solution.RequestedDevice).Name;
+            this.suggested = result.SingleOrDefault(x => x.Id == solution.SuggestedDevice).Name;
         }
         catch
         {

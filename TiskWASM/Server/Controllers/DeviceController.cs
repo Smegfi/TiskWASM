@@ -51,13 +51,13 @@ namespace TiskWASM.Server.Controllers
             {
                 List<dtDevice> devices = new List<dtDevice>();
                 devices.AddRange(await this.context.Devices.Where(x => x.Name.ToLowerInvariant() == searchString.ToLowerInvariant()).ToListAsync());
-                devices.AddRange(await this.context.Devices.Where(x=>x.Description.ToLowerInvariant() == searchString.ToLowerInvariant()).ToListAsync());
+                devices.AddRange(await this.context.Devices.Where(x => x.Description.ToLowerInvariant() == searchString.ToLowerInvariant()).ToListAsync());
                 return Ok(devices);
             }
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpPost()]
+        [HttpPost]
         public async Task<IActionResult> Post(dtDevice model)
         {
             try
@@ -95,9 +95,9 @@ namespace TiskWASM.Server.Controllers
         {
             try
             {
-                var result = this.context.Devices.Remove(await this.context.Devices.FindAsync(id));
+                this.context.Devices.Remove(await this.context.Devices.FindAsync(id));
                 await this.context.SaveChangesAsync();
-                return Ok(result.Entity);
+                return Ok("Smazáno");
             }
             catch (Exception ex)
             {

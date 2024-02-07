@@ -1,8 +1,8 @@
-﻿@page "/add-user"
+﻿@page "/edit-user/{Id:int}"
 @inject HttpClient client
 @inject ISnackbar Snackbar
 
-<h2>Přidat uživatele</h2>
+<h2>Upravit uživatele</h2>
 <MudPaper Class="pa-4 mb-4">
     <MudForm @ref="form">
         <MudTextField T="string" Label="Jméno a příjemní" Required="true" @bind-Value="formUser.Name" />
@@ -21,24 +21,40 @@
     }
     else
     {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateUser">Uložit</MudButton>        
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@EditUserForm">Upravit</MudButton>
     }
 </MudPaper>
 
 
 @code {
+    [Parameter]
+    public int Id { get; set; }
+
     private MudForm form;
     private dtUser formUser = new dtUser();
-    private bool _loading = false;    
+    private bool _loading = false;
 
-    private async Task CreateUser()
+    protected override async Task OnInitializedAsync()
     {
-        _loading = true;        
-        var result = await client.PostAsJsonAsync<dtUser>("/api/user", formUser);
+        var result = await client.GetFromJsonAsync<dtUser>($"/api/user/{Id}");
+        if (result != null)
+        {
+            formUser = result;
+        }
+        else
+        {
+            Snackbar.Add("Uživatel nenalezen", Severity.Error);
+        }
+    }
+
+    private async Task EditUserForm()
+    {
+        _loading = true;
+        var result = await client.PutAsJsonAsync<dtUser>("/api/user", formUser);
         if (result.IsSuccessStatusCode)
         {
             var entity = await result.Content.ReadFromJsonAsync<dtUser>();
-            Snackbar.Add($"Byl vytvořený uživatel s ID: {entity.Id}", Severity.Success);
+            Snackbar.Add($"Byl upravený uživatel \"{entity.Name}\"", Severity.Success);
             this.formUser = new dtUser();
         }
         else

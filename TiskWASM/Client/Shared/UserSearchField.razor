@@ -1,0 +1,80 @@
+﻿@inject HttpClient client
+@inject ISnackbar snackbar
+@inject IDialogService DialogService
+
+<MudAutocomplete ValueChanged="FireEvent" DebounceInterval="500" T="dtUser" ToStringFunc="@(e=> e==null?null : $"{e.Name}")" Label="Jméno / Email" Value="User" SearchFunc="@Search" Variant="Variant.Filled" />
+<MudTextField DebounceInterval="500" OnDebounceIntervalElapsed="SearchOffice" @bind-Value="User.Office" Label="Kancelář" Variant="Variant.Filled" />
+
+@code {
+    [Parameter]
+    public dtUser User { get; set; } = new dtUser();
+
+    [Parameter]
+    public EventCallback<dtUser> UserChanged { get; set; }
+
+    private string SearchString = string.Empty;
+
+    private async Task<IEnumerable<dtUser>> Search(string value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            var result = await client.GetFromJsonAsync<List<dtUser>>($"api/user/search/{value}");
+
+            return result;
+        }
+        else
+        {
+            return new List<dtUser>();
+
+        }
+    }
+
+    private async Task SearchOffice(string value)
+    {
+        var result = await client.GetFromJsonAsync<List<dtUser>>($"api/user/office/{value}");
+
+        if (result.Any())
+        {
+            var dialogResult = await SearchByOffice(result);
+            if (dialogResult is not null)
+            {                    
+                await FireEvent(dialogResult);
+            }
+        }
+    }
+    private async Task FireEvent(dtUser newValue)
+    {
+        this.User = newValue;
+        await SearchForOcurencies(User.Id);
+        await UserChanged.InvokeAsync(User);
+    }
+
+
+    private async Task SearchForOcurencies(int UserId)
+    {
+        var result = await client.GetFromJsonAsync<bool>($"api/solution/find-user/{UserId}");
+        if (result)
+        {
+            snackbar.Add("Záznam již existuje v databázi.", Severity.Warning);
+        }
+    }
+
+
+    public async Task<dtUser?> SearchByOffice(List<dtUser> model)
+    {
+        var parameters = new DialogParameters<UserSearch> { { x => x.Users, model } };
+
+        var dialog = await DialogService.ShowAsync<UserSearch>("Zobrazení dle kanceláře", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            int UserId = int.Parse(result.Data.ToString());
+            return await client.GetFromJsonAsync<dtUser>($"api/user/{UserId}");
+        }
+        else
+        {
+            return null;
+        }
+    }
+}

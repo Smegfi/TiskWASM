@@ -4,25 +4,26 @@
 @inject IDialogService DialogService
 @inject IJSRuntime JS
 
-<div class="d-flex flex-row justify-content-between oi-align-center mb-4">
+<div class="d-flex flex-row justify-content-between align-items-center mb-4">
     <h2>Dashboard</h2>
     <a class="btn btn-success" href="@(httpClient.BaseAddress+"api/dashboard/export")">
         Stáhnout .csv Export
     </a>
 </div>
 
-
+<h1>Under construction</h1>
+@* 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudGrid>
         <MudItem xs="12" sm="6" md="4">            
             <MudCard Style="height: 200px;">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Počet záznamů</MudText>
+                        <MudText Typo="Typo.h6">Počet pořízených záznamů</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Typo="Typo.h4" Align="Align.Center">@Elements.Count()</MudText>
+                    <MudText Typo="Typo.h4" Align="Align.Center">@Solutions.Count()</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -46,7 +47,7 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Typo="Typo.h4" Align="Align.Center">@Printers.Count()</MudText>
+                    <MudText Typo="Typo.h4" Align="Align.Center">@Devices.Count()</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -92,18 +93,18 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudTable Items="@Elements.TakeLast(5).Reverse()" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+                    <MudTable Items="@Solutions.TakeLast(5).Reverse()" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
                         <HeaderContent>
-                            <MudTh>Nr</MudTh>
+                            <MudTh>Id</MudTh>
                             <MudTh>Uživatel</MudTh>
-                            <MudTh>Požadovaná tiskárna</MudTh>
-                            <MudTh>Navrhovaná tiskárna</MudTh>
+                            <MudTh>Požadované zařízení</MudTh>
+                            <MudTh>Navrhované zařízení</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Nr">@context.Id</MudTd>
-                                <MudTd DataLabel="Jméno zaměstnance">@Users.SingleOrDefault(x => x.Id == context.UserId).Name</MudTd>
-                            <MudTd DataLabel="Kancelář">@context.RequestedPrinter</MudTd>
-                            <MudTd DataLabel="Odbor">@context.SuggestedPrinter</MudTd>
+                            <MudTd DataLabel="Id">@context.Id</MudTd>
+                            <MudTd DataLabel="Jméno zaměstnance">@Users.SingleOrDefault(x => x.Id == context.UserId).Name</MudTd>
+                            <MudTd DataLabel="RequestedDevice">@context.RequestedDevice</MudTd>
+                            <MudTd DataLabel="SuggestedDevice">@context.SuggestedDevice</MudTd>
                         </RowTemplate>
                     </MudTable>
                 </MudCardContent>
@@ -113,11 +114,11 @@
             <MudCard Style="height: 100%;">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Chybějící záznamy</MudText>
+                        <MudText Typo="Typo.h6"></MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                        <MudTable Items="@UsersWithouPrinter" T="dtUser" Hover="true" Breakpoint="Breakpoint.Sm">
+                        <MudTable Items="@UsersWithouDevice" T="dtUser" Hover="true" Breakpoint="Breakpoint.Sm">
                             <HeaderContent>
                                 <MudTh>Nr</MudTh>
                                 <MudTh>Jméno</MudTh>
@@ -127,8 +128,8 @@
                             <RowTemplate>
                                 <MudTd DataLabel="Nr">@context.Id</MudTd>
                                 <MudTd DataLabel="Sign">@context.Name</MudTd>
-                                <MudTd DataLabel="Name">@context.Office</MudTd>
-                                <MudTd DataLabel="Name">@context.Department</MudTd>
+                                <MudTd DataLabel="Office">@context.Office</MudTd>
+                                <MudTd DataLabel="Department">@context.Department</MudTd>
                             </RowTemplate>
                         </MudTable>
                 </MudCardContent>
@@ -137,21 +138,11 @@
     </MudGrid>
 </MudContainer>
 
-    <script>
-        window.triggerFileDownload = (fileName, url) => {
-            const anchorElement = document.createElement('a');
-            anchorElement.href = url;
-            anchorElement.download = fileName ?? '';
-            anchorElement.click();
-            anchorElement.remove();
-        }
-    </script>
-
-    @code {
-    private IEnumerable<dtSolution> Elements = new List<dtSolution>();
+@code {
+    private IEnumerable<dtSolution> Solutions = new List<dtSolution>();
     private IEnumerable<dtUser> Users = new List<dtUser>();
-    private IEnumerable<dtDevice> Printers = new List<dtDevice>();
-    private IEnumerable<dtUser> UsersWithouPrinter = new List<dtUser>();
+    private IEnumerable<dtDevice> Devices = new List<dtDevice>();
+    private IEnumerable<dtUser> UsersWithouDevice = new List<dtUser>();
     private DashboardCounter Counter = new DashboardCounter();
     private double Percentage = 0;
     private string[] _departments = new string[30];
@@ -160,14 +151,14 @@
     protected override async Task OnInitializedAsync()
     {
         var result = await httpClient.GetFromJsonAsync<List<dtSolution>>("api/solution");
-        Users = await httpClient.GetFromJsonAsync<List<dtUser>>("api/user");
-        Printers = await httpClient.GetFromJsonAsync<List<dtDevice>>("api/device");
-        Counter = await httpClient.GetFromJsonAsync<DashboardCounter>($"api/dashboard/users?odbor={Odbor}");
+        this.Users = await httpClient.GetFromJsonAsync<List<dtUser>>("api/user");
+        this.Devices = await httpClient.GetFromJsonAsync<List<dtDevice>>("api/device");
+        this.Counter = await httpClient.GetFromJsonAsync<DashboardCounter>($"api/dashboard/users?odbor={Odbor}");
         _departments = await httpClient.GetFromJsonAsync<string[]>("/api/dashboard");
 
-        UsersWithouPrinter = await httpClient.GetFromJsonAsync<List<dtUser>>("api/solution/withoutprinter");
+        this.UsersWithouDevice = await httpClient.GetFromJsonAsync<List<dtUser>>("api/solution/withoutprinter");
 
-        Elements = result;
+        this.Solutions = result;
 
         this.Percentage = Math.Round((Convert.ToDouble(this.Counter.Count) / Convert.ToDouble(this.Counter.TotalCount)) * 100.00, 2);
     }
@@ -215,3 +206,4 @@
 
     }
 }
+ *@

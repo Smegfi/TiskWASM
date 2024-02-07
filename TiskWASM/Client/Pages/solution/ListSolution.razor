@@ -1,47 +1,57 @@
 ﻿@page "/list-solution"
 @inject HttpClient client
 @inject NavigationManager navigation
+@inject IDialogService dialog
+@inject ISnackbar snackbar
 
-<h2>Záznamy tiskáren</h2>
+<h2>Provedené záznamy</h2>
 
 <MudTable Items="@Solutions" Hover="true" Loading="_loading" LoadingProgressColor="Color.Info" Filter="new Func<dtSolution,bool>(FilterFunc1)">
     <ToolBarContent>
-        <MudText Typo="Typo.h6"></MudText>
-        <MudSpacer />
-        <MudTextField @bind-Value="searchString" Immediate="true" Placeholder="Hledat..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudTextField @bind-Value="searchString" Immediate="true" Placeholder="Jméno, kancelář, odbor" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
+    <ColGroup>
+        <col style="width: 60px;" />
+        <col style="width: 25%;" />
+        <col style="width: 20%;" />
+        <col style="width: 20%;" />
+        <col style="width: 35%;" />
+    </ColGroup>
     <HeaderContent>
-        <MudTh>Nr</MudTh>
+        <MudTh>Id</MudTh>
         <MudTh>Uživatel</MudTh>
-        <MudTh>Požadovaná tiskárna</MudTh>
-        <MudTh>Navrhovaná tiskárna</MudTh>
+        <MudTh>Požadované zařízení</MudTh>
+        <MudTh>Navrhované zařízení</MudTh>
         <MudTh>Popis, vyjádření</MudTh>
-        <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Nr">@context.Id</MudTd>
-            <MudTd DataLabel="Jméno zaměstnance">@Users.SingleOrDefault(x=>x.Id == context.UserId).Name</MudTd>
-            <MudTd DataLabel="Kancelář">@Printers.SingleOrDefault(x => x.Id == context.RequestedPrinter).Name</MudTd>
-            <MudTd DataLabel="Odbor">@Printers.SingleOrDefault(x => x.Id == @context.SuggestedPrinter).Name</MudTd>
-            <MudTd DataLabel="Email">@context.Description</MudTd>
-            <MudTd DataLabel="Actions">
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.MoreHoriz" Color="Color.Info" OnClick="@(()=>RemoveItem(context.Id))">Info</MudButton>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudTd DataLabel="Nr">@context.Id</MudTd>
+        <MudTd DataLabel="UserId">@context._User.Name</MudTd>
+        <MudTd DataLabel="RequestedDevice">@Devices.SingleOrDefault(x => x.Id == context.RequestedDevice).Name</MudTd>
+        <MudTd DataLabel="SuggestedDevice">@Devices.SingleOrDefault(x => x.Id == context.SuggestedDevice).Name</MudTd>
+        <MudTd DataLabel="Description">@context.Description</MudTd>
+        <MudTd DataLabel="">
+            <MudMenu Variant="Variant.Outlined" Icon="@Icons.Material.Filled.MoreHoriz" Color="Color.Primary">
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Primary" Icon="@Icons.Material.Filled.Info" Href="@($"detail-solution/{context.Id}")">Detail</MudMenuItem>
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Primary" Icon="@Icons.Material.Filled.Edit">Upravit</MudMenuItem>
+                    <MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="()=>DeleteSolutionDialog(context.Id)" OnTouch="()=>DeleteSolutionDialog(context.Id)">Smazat</MudMenuItem>
+            </MudMenu>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
     @code {
     private IEnumerable<dtSolution> Solutions = new List<dtSolution>();
     private List<dtUser> Users = new List<dtUser>();
-    private List<dtDevice> Printers = new List<dtDevice>();
+    private List<dtDevice> Devices = new List<dtDevice>();
     private bool _loading = false;
     string searchString = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        Solutions = await client.GetFromJsonAsync<List<dtSolution>>("/api/solution");
-        Printers = await client.GetFromJsonAsync<List<dtDevice>>("/api/printer");
+        this.Solutions = await client.GetFromJsonAsync<List<dtSolution>>("/api/solution");
+        this.Devices = await client.GetFromJsonAsync<List<dtDevice>>("/api/device");        
         Users = await client.GetFromJsonAsync<List<dtUser>>("/api/user");
         _loading = false;
     }
@@ -57,8 +67,24 @@
         return false;
     }
 
-    private async Task RemoveItem(int id)
+    private async Task DeleteSolutionDialog(int id)
     {
-        navigation.NavigateTo($"/detail-solution/{id}");
+        var options = new DialogOptions { CloseButton = true, FullWidth = true, DisableBackdropClick = true };
+
+        var deleteDialog = await dialog.ShowAsync<ConfirmSolutionDelete>("Smazat záznam?", options);
+        var confirmed = await deleteDialog.Result;
+        if (!confirmed.Canceled)
+        {
+            var result = await client.DeleteAsync($"/api/solution/{id}");
+            if (result.IsSuccessStatusCode)
+            {
+                snackbar.Add("Záznam byl smazán", Severity.Success);
+            }
+            else
+            {
+                snackbar.Add("Chyba při mazání záznamu", Severity.Error);
+            }
+            this.Solutions = await client.GetFromJsonAsync<List<dtSolution>>("/api/solution");
+        }
     }
 }

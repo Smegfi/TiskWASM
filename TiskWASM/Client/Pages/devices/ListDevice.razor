@@ -6,20 +6,24 @@
 <h2>Všechna zařízení</h2>
 
 <MudTable Items="@Devices" Hover="true" Loading="_loading" LoadingProgressColor="Color.Info">
+    <ColGroup>
+        <col style="width: 60px;" />
+        <col style="width: 50%;" />
+        <col style="width: 50%;" />
+    </ColGroup>
     <HeaderContent>
         <MudTh>Id</MudTh>
         <MudTh>Název zařízení</MudTh>
         <MudTh>Popis zařízení</MudTh>
-        <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Nr">@context.Id</MudTd>
         <MudTd DataLabel="Název">@context.Name</MudTd>
         <MudTd DataLabel="Popis">@context.Description</MudTd>
         <MudTd DataLabel="">
-            <MudMenu Variant="Variant.Filled" Icon="@Icons.Material.Filled.MoreHoriz" Color="Color.Primary">
+            <MudMenu Variant="Variant.Outlined" Icon="@Icons.Material.Filled.MoreHoriz" Color="Color.Primary">
                 <MudMenuItem IconSize="Size.Small" IconColor="Color.Primary" Icon="@Icons.Material.Filled.Edit" Href="@($"edit-device/{context.Id}")">Upravit</MudMenuItem>
-                <MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="()=>DeleteDialog(context.Id)">Smazat</MudMenuItem>
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="()=>DeleteDeviceDialog(context.Id)" OnTouch="()=>DeleteDeviceDialog(context.Id)">Smazat</MudMenuItem>
             </MudMenu>
         </MudTd>
     </RowTemplate>
@@ -36,9 +40,9 @@
         _loading = false;
     }
 
-    public async Task DeleteDialog(int id)
+    public async Task DeleteDeviceDialog(int id)
     {
-        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Medium };
+        var options = new DialogOptions { CloseButton = true, FullWidth = true, DisableBackdropClick = true };
 
         var deleteDialog = await dialog.ShowAsync<ConfirmDelete>("Smazat zařízení?", options);
         var confirmed = await deleteDialog.Result;

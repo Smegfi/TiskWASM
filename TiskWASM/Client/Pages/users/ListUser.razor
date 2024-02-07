@@ -1,22 +1,26 @@
 ﻿@page "/list-user"
 @inject HttpClient client
 @inject IDialogService DialogService
+@inject ISnackbar snackbar
 
 <h2>Všichni uživatelé</h2>
-
 <MudTable Items="@Users" Hover="true" Loading="_loading" LoadingProgressColor="Color.Info" Filter="new Func<dtUser,bool>(FilterFunc1)">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Periodic Elements</MudText>
-        <MudSpacer />
         <MudTextField @bind-Value="searchString" Immediate="true" Placeholder="Hledat..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
+    <ColGroup>        
+        <col style="width: 60px;" />
+        <col style="width: 25%;" />
+        <col style="width: 25%;" />
+        <col style="width: 25%;" />
+        <col style="width: 25%;" />
+    </ColGroup>
     <HeaderContent>
         <MudTh>Nr</MudTh>
         <MudTh>Jméno</MudTh>
         <MudTh>Kancelář</MudTh>
         <MudTh>Odbor</MudTh>
         <MudTh>Email</MudTh>
-        <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Nr">@context.Id</MudTd>
@@ -25,7 +29,10 @@
         <MudTd DataLabel="Odbor">@context.Department</MudTd>
         <MudTd DataLabel="Email">@context.Email</MudTd>
         <MudTd DataLabel="">
-            <MudButton OnClick="() => OpenDialog(context.Id)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error">Smazat</MudButton>
+            <MudMenu Variant="Variant.Outlined" Icon="@Icons.Material.Filled.MoreHoriz" Color="Color.Primary">
+                <MudMenuItem IconSize="Size.Small" IconColor="Color.Primary" Icon="@Icons.Material.Filled.Edit" Href="@($"edit-user/{context.Id}")">Upravit</MudMenuItem>
+                    <MudMenuItem IconSize="Size.Small" IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="()=>DeleteUserDialog(context.Id)" OnTouch="()=>DeleteUserDialog(context.Id)">Smazat</MudMenuItem>
+            </MudMenu>
         </MudTd>
     </RowTemplate>
 </MudTable>
@@ -34,6 +41,7 @@
     private IEnumerable<dtUser> Users = new List<dtUser>();
     private bool _loading = false;
     string searchString = string.Empty;
+    private dtUser selectedItem1 = new dtUser();
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,17 +61,23 @@
         return false;
     }
 
-    private async Task OpenDialog(int id)
+    private async Task DeleteUserDialog(int id)
     {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var options = new DialogOptions { CloseButton = true, FullWidth = true, DisableBackdropClick = true };
         var dialog = await DialogService.ShowAsync<ConfirmUserDelete>("Smazání uživatele", options);
-        var result = dialog.Result;
-        if (!result.IsCanceled)
+        var confirmed = await dialog.Result;
+        if (!confirmed.Canceled)
         {
-            await client.DeleteAsync($"api/user/{id}");
-            var temp = this.Users.ToList();
-            temp.Remove(temp.FirstOrDefault(x => x.Id == id));
-            this.Users = temp;
+            var result = await client.DeleteAsync($"/api/user/{id}");
+            if (result.IsSuccessStatusCode)
+            {
+                snackbar.Add("Uživatel byl smazán", Severity.Success);
+            }
+            else
+            {
+                snackbar.Add("Chyba při mazání uživatele", Severity.Error);
+            }
+            this.Users = await client.GetFromJsonAsync<List<dtUser>>("/api/user");
         }
     }
 }

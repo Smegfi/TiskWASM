@@ -12,5 +12,8 @@ namespace TiskWASM.Shared
         public string Name { get; set; } = string.Empty;
         public DateTime Date { get; set; }
         public string Description { get; set; } = string.Empty;
+
+        [ForeignKey("SolutionId")]
+        public virtual dtSolution _Solution { get; set; }
     }
 }

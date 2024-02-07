@@ -9,8 +9,12 @@ namespace TiskWASM.Shared
         [Key]
         public int Id { get; set; }
         public int UserId { get; set; }
-        public int RequestedPrinter { get; set; }
-        public int SuggestedPrinter { get; set; }
+        public int RequestedDevice { get; set; }
+        public int SuggestedDevice { get; set; }
         public string Description { get; set; } = string.Empty;
+
+        [ForeignKey("UserId")]
+        public virtual dtUser _User { get; set; }
+        public virtual ICollection<dtComment>? _Comments { get; set; }
     }
 }

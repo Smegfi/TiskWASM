@@ -1,5 +1,8 @@
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Text.Json.Serialization;
 using TiskWASM.Server.Data;
 
 namespace TiskWASM
@@ -12,13 +15,17 @@ namespace TiskWASM
 
             // Add services to the container.
 
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews().AddJsonOptions(opt => {
+                opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                opt.JsonSerializerOptions.WriteIndented = true;
+            });
+
             builder.Services.AddRazorPages();
 
             var config = builder.Configuration.GetConnectionString("PrimaryDb");
             builder.Services.AddDbContext<DatabaseContext>(options =>
             {
-                options.UseSqlite(config);
+                options.UseLazyLoadingProxies().UseSqlite(config);
             });
 
             var app = builder.Build();

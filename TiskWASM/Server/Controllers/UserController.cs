@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -29,27 +30,73 @@ namespace TiskWASM.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<List<dtUser>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await this.context.Users.ToListAsync();
+            try
+            {
+                var result = await this.context.Users.ToListAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            try
+            {
+                var result = await this.context.Users.FindAsync(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{filter}")]
-        public async Task<dtUser> Filter(string filter)
+        public async Task<IActionResult> Get(string filter)
         {
-            return await this.context.Users.Where(x=>x.Email.ToLowerInvariant() == filter.ToLowerInvariant()).SingleOrDefaultAsync();
+            try
+            {
+                var result = await this.context.Users.FirstOrDefaultAsync(x => x.Email.ToLower().Contains(filter.ToLower()));
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }            
         }
 
-        [HttpGet("{filter:int}")]
-        public async Task<dtUser> FindById(int filter)
+        [HttpGet("search/{filter}")]
+        public async Task<IActionResult> GetSearch(string filter)
         {
-            return await this.context.Users.FindAsync(filter);
+            try
+            {
+                var result = await this.context.Users.Where(x => x.Email.ToLower().Contains(filter.ToLower()) || x.Name.ToLower().Contains(filter.ToLower())).ToListAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }            
         }
 
         [HttpGet("office/{office}")]
-        public async Task<List<dtUser>> FilterByOffice(string office)
+        public async Task<IActionResult> FilterByOffice(string office)
         {
-            return await context.Users.Where(x => x.Office == office).ToListAsync();
+            try
+            {
+                var result = await context.Users.Where(x => x.Office == office).ToListAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
@@ -67,6 +114,43 @@ namespace TiskWASM.Server.Controllers
             }
         }
 
+        [HttpPut]
+        public async Task<IActionResult> Update(dtUser model)
+        {
+            try
+            {
+                var old = await this.context.Users.FindAsync(model.Id);
+                old.Name = model.Name;
+                old.Office = model.Office;
+                old.Department = model.Department;
+                old.Email = model.Email;
+                await this.context.SaveChangesAsync();
+
+                return Ok(old);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                this.context.Users.Remove(await context.Users.FindAsync(id));
+                await context.SaveChangesAsync();
+                return Ok("Smazáno");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
         [HttpPost("upload")]
         public async Task PostFile([FromForm] IFormFile file)
         {
@@ -81,13 +165,6 @@ namespace TiskWASM.Server.Controllers
             await FromFileToDatabase(path);
         }
 
-        [HttpDelete("{id}")]
-        public async Task Delete(int id)
-        {
-            var user = await context.Users.FindAsync(id);
-            context.Users.Remove(user);
-            await context.SaveChangesAsync();
-        }
 
         private async Task FromFileToDatabase(string filename)
         {
@@ -95,7 +172,7 @@ namespace TiskWASM.Server.Controllers
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = true,
-                Encoding = Encoding.UTF8,   
+                Encoding = Encoding.UTF8,
                 BadDataFound = null,
                 Delimiter = ";"
             };
@@ -128,7 +205,6 @@ namespace TiskWASM.Server.Controllers
                     Department = item.Department,
                     Office = item.Office
                 };
-
                 await this.context.Users.AddAsync(u);
                 await this.context.SaveChangesAsync();
             }

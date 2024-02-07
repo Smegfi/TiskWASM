@@ -12,5 +12,7 @@ namespace TiskWASM.Shared
         public string Department { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Office { get; set; } = string.Empty;
+
+        public virtual ICollection<dtSolution>? _Solutions { get; set; }
     }
 }

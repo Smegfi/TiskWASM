@@ -112,8 +112,8 @@ namespace TiskWASM.Server.Controllers
                         Office = user.Office,
 
                         SolutionID = item.Id,
-                        RequestedPrinter = printerTypes.FirstOrDefault(x=>x.Id == item.RequestedPrinter).Name,
-                        SuggestedPrinter = printerTypes.FirstOrDefault(x=>x.Id == item.SuggestedPrinter).Name,
+                        RequestedPrinter = printerTypes.FirstOrDefault(x=>x.Id == item.RequestedDevice).Name,
+                        SuggestedPrinter = printerTypes.FirstOrDefault(x=>x.Id == item.SuggestedDevice).Name,
                         Description = item.Description
                     };
                     try

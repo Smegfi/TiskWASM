@@ -1,4 +1,3 @@
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

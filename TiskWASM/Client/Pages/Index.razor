@@ -7,28 +7,40 @@
 
 <h2>Přidat zařízení zaměstnanci</h2>
 <MudPaper Class="pa-4">
-    <MudForm @ref="form">
-        <MudPaper Class="d-flex gap-3 mb-4">            
-            <UserSearchField @bind-User="@formUser"/>
+    <MudForm @ref="form" Class="d-flex flex-column gap-3">
+        <MudPaper Elevation="3" Class="p-2">
+            <UserSearchField @bind-User="@formUser" />
         </MudPaper>
 
-        <MudDivider />
-
-        <MudPaper Class="d-flex gap-4 mb-4">
-            <MudSelect @bind-Value="@solution.RequestedDevice" Label="Požadované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
-                @foreach (var item in Devices)
-                {
-                    <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
-                }
-            </MudSelect>
-            <MudSelect @bind-Value="@solution.SuggestedDevice" Label="Navrhované zařízení" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
-                @foreach (var item in Devices)
-                {   
-                    <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>                
-                }
-            </MudSelect>
+        <MudPaper Elevation="3" Class="p-2">
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="text-center">Zařízení</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="@solution.RequestedDevice" Label="Požadované zařízení"
+                        Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var item in Devices)
+                        {
+                            <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="@solution.SuggestedDevice" Label="Navrhované zařízení"
+                        Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var item in Devices)
+                        {
+                            <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="@solution.Description" Label="Vyjádření, informace"
+                        Variant="Variant.Filled" Lines="4" />
+                </MudItem>
+            </MudGrid>
         </MudPaper>
-        <MudTextField @bind-Value="@solution.Description" Label="Vyjádření, informace" Variant="Variant.Filled" Lines="4" />
     </MudForm>
 </MudPaper>
 <MudPaper Class="pa-4">
@@ -43,10 +55,10 @@
     {
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateSolution">Uložit</MudButton>
     }
-</MudPaper>
+    </MudPaper>
 
 
-@code {
+    @code {
     private MudForm form;
     private dtSolution solution = new dtSolution();
     private dtUser formUser = new dtUser();

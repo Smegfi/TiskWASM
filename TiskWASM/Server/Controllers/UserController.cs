@@ -1,13 +1,8 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
 using System.Text;
 using TiskWASM.Server.Data;
 using TiskWASM.Shared;

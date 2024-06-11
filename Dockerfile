@@ -1,18 +1,23 @@
-FROM bitnami/dotnet-sdk:6
+## BUILD container
+FROM bitnami/dotnet-sdk:6 as build
 
-RUN mkdir -p /app
-RUN mkdir -p /app/src
-RUN mkdir -p /app/prod
+WORKDIR /app-build
+COPY . .
 
-COPY . /app/src
+RUN dotnet publish -c Release -o release
 
-WORKDIR /app/src
+## RELEASE container
+FROM alpine
+RUN apk add aspnetcore6-runtime
+RUN apk update
+RUN apk upgrade
 
-RUN dotnet publish -c Release -o /app/prod
-
-WORKDIR /app/prod
-
+WORKDIR /app
+COPY --from=build /app-build/release .
+WORKDIR /app/Data
+COPY ./TiskWASM/Server/Data/. .
 EXPOSE 5000/tcp
-EXPOSE 5000/udp
+ENV ASPNETCORE_URLS http://*:5000
 
+WORKDIR /app
 CMD ["dotnet","TiskWASM.Server.dll"]
